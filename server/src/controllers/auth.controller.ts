@@ -11,7 +11,7 @@ const prisma = new PrismaClient({
 /* ===================== REGISTER ===================== */
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role } = req.body || {};
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -44,6 +44,7 @@ export const register = async (req: Request, res: Response) => {
       token,
     });
   } catch (error) {
+    console.error('Register error:', error);
     return res.status(500).json({ message: 'Server error', error });
   }
 };
@@ -51,7 +52,7 @@ export const register = async (req: Request, res: Response) => {
 /* ===================== LOGIN ===================== */
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
 
     const user = await prisma.user.findUnique({
       where: { email },
@@ -79,6 +80,7 @@ export const login = async (req: Request, res: Response) => {
       token,
     });
   } catch (error) {
+    console.error('Login error:', error);
     return res.status(500).json({ message: 'Server error', error });
   }
 };
