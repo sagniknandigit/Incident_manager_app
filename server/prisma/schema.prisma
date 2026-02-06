@@ -7,16 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum IncidentStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum IncidentPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 model User {
   id       Int    @id @default(autoincrement())
   name     String
   email    String @unique
   password String
-  role     String @default("USER")
+  role     String
+  reportedIncidents Incident[] @relation("ReportedIncidents")
+  assignedIncidents Incident[] @relation("AssignedIncidents")
 }
 
-enum Role {
-  REPORTER
-  ENGINEER
-  MANAGER
+model Incident {
+  id           Int              @id @default(autoincrement())
+  title        String
+  description  String
+  status       IncidentStatus   @default(OPEN)
+  priority     IncidentPriority @default(MEDIUM)
+  reporter     User @relation("ReportedIncidents", fields: [reporterId], references: [id])
+  reporterId   Int
+  engineer     User? @relation("AssignedIncidents", fields: [engineerId], references: [id])
+  engineerId   Int?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

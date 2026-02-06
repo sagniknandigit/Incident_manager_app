@@ -5,12 +5,47 @@ import { RootState } from '../redux/store';
 import LoginScreen from '../screens/auth/LoginScreen';
 import HomeScreen from '../screens/dashboard/HomeScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { loginSuccess, logout } from '../redux/authSlice';
+import { getCurrentUser } from '../api/authApi';
+import { View, ActivityIndicator } from 'react-native';
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-  const isAuth = useSelector(
-    (state: RootState) => state.auth.isAuthenticated
-  );
+  const isAuth = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+          // Token exists, verify it and get user data
+          const response = await getCurrentUser();
+          dispatch(loginSuccess({ user: response.data, token }));
+        }
+      } catch (error) {
+        console.log('Session restore failed:', error);
+        await AsyncStorage.removeItem('token');
+        dispatch(logout());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    restoreSession();
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
