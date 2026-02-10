@@ -68,7 +68,7 @@ export default function HomeScreen() {
 
           {user?.role === 'MANAGER' && (
             <>
-              {renderDashboardCard('All Incidents', 'Overview of all system activity', () => navigation.navigate('IncidentList'))}
+              {renderDashboardCard('All Incidents', 'Overview of all system activity', () => navigation.navigate('AllIncidents'))}
               {renderDashboardCard('Team Stats', 'Performance metrics', () => { })}
             </>
           )}
@@ -79,7 +79,7 @@ export default function HomeScreen() {
             title="DEBUG: Check Token"
             onPress={checkToken}
             variant="secondary"
-            style={[styles.logoutBtn, { marginBottom: 10 }]}
+            style={styles.logoutBtn}
           />
           <Button
             title="Sign Out"
@@ -130,5 +130,6 @@ const styles = StyleSheet.create({
   },
   logoutBtn: {
     alignSelf: 'center',
+    marginBottom: theme.spacing.md,
   },
 });

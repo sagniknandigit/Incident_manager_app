@@ -11,6 +11,9 @@ import { useDispatch } from 'react-redux';
 import { loginSuccess, logout } from '../redux/authSlice';
 import { getCurrentUser } from '../api/authApi';
 import { View, ActivityIndicator } from 'react-native';
+import CreateIncident from '../screens/incidents/CreateIncident';
+import IncidentListScreen from '../screens/manager/IncidentListScreen';
+
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
@@ -51,7 +54,12 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuth ? (
-          <Stack.Screen name="Home" component={HomeScreen} />
+          <>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="CreateIncident" component={CreateIncident} />
+            <Stack.Screen name='AllIncidents' component={IncidentListScreen}/>
+          </>
+          
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />

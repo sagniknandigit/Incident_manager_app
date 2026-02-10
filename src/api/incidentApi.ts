@@ -13,3 +13,7 @@ export const getIncidentsApi = () => {
 export const createIncidentApi = (data: CreateIncidentPayload) => {
     return apiClient.post('/incidents', data);
 };
+
+export const assignEngineerApi=(incidentId:number,engineerId:number)=>{
+  return apiClient.put(`/incidents/${incidentId}/assign`,{engineerId});
+};
