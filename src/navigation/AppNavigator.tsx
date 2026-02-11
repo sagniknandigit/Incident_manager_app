@@ -1,18 +1,18 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../redux/store';
 import LoginScreen from '../screens/auth/LoginScreen';
 import HomeScreen from '../screens/dashboard/HomeScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useDispatch } from 'react-redux';
 import { loginSuccess, logout } from '../redux/authSlice';
 import { getCurrentUser } from '../api/authApi';
 import { View, ActivityIndicator } from 'react-native';
 import CreateIncident from '../screens/incidents/CreateIncident';
-import IncidentListScreen from '../screens/manager/IncidentListScreen';
+import IncidentList from '../screens/incidents/IncidentList';
+import IncidentDetailsScreen from '../screens/manager/IncidentDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -57,9 +57,10 @@ export default function AppNavigator() {
           <>
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="CreateIncident" component={CreateIncident} />
-            <Stack.Screen name='AllIncidents' component={IncidentListScreen}/>
+            <Stack.Screen name="IncidentList" component={IncidentList} />
+            <Stack.Screen name="AllIncidents" component={IncidentList} />
+            <Stack.Screen name="IncidentDetails" component={IncidentDetailsScreen} />
           </>
-          
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />

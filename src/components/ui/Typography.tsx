@@ -3,7 +3,7 @@ import { Text, TextProps, StyleSheet, TextStyle } from 'react-native';
 import { theme } from '../../theme/theme';
 
 interface TypographyProps extends TextProps {
-    variant?: 'h1' | 'h2' | 'h3' | 'body' | 'caption' | 'button';
+    variant?: 'h1' | 'h2' | 'h3' | 'subtitle' | 'body' | 'caption' | 'button';
     color?: string;
     align?: 'auto' | 'left' | 'right' | 'center' | 'justify';
 }

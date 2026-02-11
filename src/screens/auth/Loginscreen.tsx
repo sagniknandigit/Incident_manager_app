@@ -1,4 +1,4 @@
-import { View, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { loginApi } from '../../api/authApi';
@@ -10,6 +10,7 @@ import { Typography } from '../../components/ui/Typography';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { theme } from '../../theme/theme';
+import { Header } from '../../components/ui/Header';
 
 export default function LoginScreen() {
   const dispatch = useDispatch();
@@ -33,7 +34,7 @@ export default function LoginScreen() {
       const response = await loginApi(email, password);
       const { token, user } = response.data;
       await AsyncStorage.setItem('token', token);
-      dispatch(loginSuccess(user));
+      dispatch(loginSuccess({ user, token }));
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {
@@ -43,66 +44,72 @@ export default function LoginScreen() {
 
   return (
     <Layout>
+      <Header title="" />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoid}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
       >
-        <View style={styles.header}>
-          <Typography variant="h1" align="center" style={styles.title}>
-            Welcome Back
-          </Typography>
-          <Typography variant="body" color={theme.colors.textSecondary} align="center">
-            Sign in to manage incidents
-          </Typography>
-        </View>
-
-        <View style={styles.form}>
-          <Input
-            label="Email"
-            placeholder="enter@email.com"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-
-          <Input
-            label="Password"
-            placeholder="••••••••"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-
-          {error ? (
-            <Typography style={styles.error} color={theme.colors.error}>
-              {error}
+        <ScrollView contentContainerStyle={styles.contentContainer}>
+          <View style={styles.header}>
+            <Typography variant="h1" align="center" style={styles.title} color={theme.colors.primary}>
+              Welcome Back
             </Typography>
-          ) : null}
+            <Typography variant="body" color={theme.colors.textSecondary} align="center">
+              Sign in to manage your incidents
+            </Typography>
+          </View>
 
-          <Button
-            title="Sign In"
-            onPress={handleLogin}
-            loading={loading}
-            style={styles.button}
-          />
+          <View style={styles.form}>
+            <Input
+              label="Email Address"
+              placeholder="name@company.com"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
 
-          <Button
-            title="Don't have an account? Sign Up"
-            onPress={() => navigation.navigate('Register')}
-            variant="ghost"
-            style={styles.secondaryButton}
-          />
-        </View>
+            <Input
+              label="Password"
+              placeholder="••••••••"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+
+            {error ? (
+              <Typography style={styles.error} color={theme.colors.error}>
+                {error}
+              </Typography>
+            ) : null}
+
+            <View style={styles.spacer} />
+
+            <Button
+              title="Sign In"
+              onPress={handleLogin}
+              loading={loading}
+              variant="primary"
+            />
+
+            <Button
+              title="Create an Account"
+              onPress={() => navigation.navigate('Register')}
+              variant="ghost"
+              style={styles.secondaryButton}
+            />
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </Layout>
   );
 }
 
 const styles = StyleSheet.create({
-  keyboardAvoid: {
-    flex: 1,
+  contentContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
+    paddingBottom: theme.spacing.xxl,
   },
   header: {
     marginBottom: theme.spacing.xl,
@@ -111,17 +118,14 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   form: {
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.xl,
-    ...theme.shadows.md,
+    width: '100%',
   },
   error: {
     marginBottom: theme.spacing.md,
     textAlign: 'center',
   },
-  button: {
-    marginTop: theme.spacing.md,
+  spacer: {
+    height: theme.spacing.md,
   },
   secondaryButton: {
     marginTop: theme.spacing.sm,

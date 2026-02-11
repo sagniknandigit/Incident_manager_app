@@ -2,14 +2,18 @@ import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 're
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { registerApi } from '../../api/authApi';
+import { loginSuccess } from '../../redux/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { theme } from '../../theme/theme';
+import { Header } from '../../components/ui/Header';
 
 export default function RegisterScreen() {
+  const dispatch = useDispatch();
   const navigation = useNavigation<any>();
 
   const [name, setName] = useState('');
@@ -29,11 +33,12 @@ export default function RegisterScreen() {
     setLoading(true);
 
     try {
-      await registerApi(name, email, password, role);
-      // alert('Registration successful'); // Replace with better feedback if possible
-      navigation.navigate('Login');
+      const response = await registerApi(name, email, password, role);
+      const { token, user } = response.data;
+      await AsyncStorage.setItem('token', token);
+      dispatch(loginSuccess({ user, token }));
     } catch (err: any) {
-      setError(err.message || 'Registration failed');
+      setError(err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -41,13 +46,14 @@ export default function RegisterScreen() {
 
   return (
     <Layout>
+      <Header title="" showBack />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoid}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-            <Typography variant="h1" align="center" style={styles.title}>
+            <Typography variant="h1" align="center" style={styles.title} color={theme.colors.primary}>
               Create Account
             </Typography>
             <Typography variant="body" color={theme.colors.textSecondary} align="center">
@@ -61,11 +67,12 @@ export default function RegisterScreen() {
               placeholder="John Doe"
               value={name}
               onChangeText={setName}
+              autoCapitalize="words"
             />
 
             <Input
-              label="Email"
-              placeholder="enter@email.com"
+              label="Email Address"
+              placeholder="name@company.com"
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -91,7 +98,7 @@ export default function RegisterScreen() {
                     title={r}
                     variant={role === r ? 'primary' : 'secondary'}
                     onPress={() => setRole(r)}
-                    style={styles.roleButton}
+                    style={[styles.roleButton, role !== r ? { opacity: 0.7 } : undefined]}
                   />
                 ))}
               </View>
@@ -103,11 +110,13 @@ export default function RegisterScreen() {
               </Typography>
             ) : null}
 
+            <View style={styles.spacer} />
+
             <Button
-              title="Register"
+              title="Sign Up"
               onPress={handleRegister}
               loading={loading}
-              style={styles.button}
+              variant="primary"
             />
 
             <Button
@@ -124,13 +133,10 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  keyboardAvoid: {
-    flex: 1,
-  },
-  scrollContent: {
+  contentContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingVertical: theme.spacing.xl,
+    paddingBottom: theme.spacing.xxl,
   },
   header: {
     marginBottom: theme.spacing.xl,
@@ -139,17 +145,14 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   form: {
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.xl,
-    ...theme.shadows.md,
+    width: '100%',
   },
   error: {
     marginBottom: theme.spacing.md,
     textAlign: 'center',
   },
-  button: {
-    marginTop: theme.spacing.md,
+  spacer: {
+    height: theme.spacing.md,
   },
   secondaryButton: {
     marginTop: theme.spacing.sm,
@@ -160,6 +163,7 @@ const styles = StyleSheet.create({
   roleLabel: {
     marginBottom: theme.spacing.sm,
     marginLeft: theme.spacing.xs,
+    fontWeight: '600',
   },
   roleButtons: {
     flexDirection: 'row',

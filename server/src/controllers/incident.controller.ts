@@ -48,3 +48,20 @@ export const updateIncidentStatus = async (req: Request, res: Response) => {
     });
     res.json(incident);
 };
+
+export const assignIncident = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { engineerId } = req.body;
+    try {
+        const incident = await prisma.incident.update({
+            where: { id: Number(id) },
+            data: {
+                engineerId: Number(engineerId),
+                status: 'IN_PROGRESS'
+            },
+        });
+        res.json(incident);
+    } catch (error) {
+        res.status(500).json({ message: 'Error assigning incident', error });
+    }
+};
