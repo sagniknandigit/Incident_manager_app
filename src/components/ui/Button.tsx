@@ -1,7 +1,6 @@
-// Button.js
 import React from 'react';
-import { TouchableOpacity, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, View } from 'react-native';
-import { theme } from '../../theme/theme';
+import { TouchableOpacity, StyleSheet, ActivityIndicator, ViewStyle } from 'react-native';
+import { useTheme } from '../../hooks/useTheme';
 import { Typography } from './Typography';
 
 interface ButtonProps {
@@ -21,25 +20,27 @@ export const Button: React.FC<ButtonProps> = ({
     loading = false,
     style
 }) => {
+    const { theme, colors } = useTheme();
+
     const getBackgroundColor = () => {
-        if (disabled) return theme.colors.surfaceHighlight;
+        if (disabled) return colors.surfaceHighlight;
         switch (variant) {
-            case 'primary': return theme.colors.primary;
-            case 'secondary': return theme.colors.surfaceHighlight;
-            case 'danger': return theme.colors.error;
+            case 'primary': return colors.primary;
+            case 'secondary': return colors.surfaceHighlight;
+            case 'danger': return colors.error;
             case 'ghost': return 'transparent';
-            default: return theme.colors.primary;
+            default: return colors.primary;
         }
     };
 
     const getTextColor = () => {
-        if (disabled) return theme.colors.textDisabled;
+        if (disabled) return colors.textDisabled;
         switch (variant) {
-            case 'primary': return theme.colors.textInverse;
-            case 'secondary': return theme.colors.textPrimary;
-            case 'danger': return theme.colors.textInverse;
-            case 'ghost': return theme.colors.primary;
-            default: return theme.colors.textInverse;
+            case 'primary': return colors.textInverse;
+            case 'secondary': return colors.textPrimary;
+            case 'danger': return colors.textInverse;
+            case 'ghost': return colors.primary;
+            default: return colors.textInverse;
         }
     };
 
@@ -47,8 +48,13 @@ export const Button: React.FC<ButtonProps> = ({
         <TouchableOpacity
             style={[
                 styles.container,
-                { backgroundColor: getBackgroundColor() },
-                variant === 'ghost' && { borderWidth: 0, shadowOpacity: 0 }, // No shadow for ghost
+                {
+                    backgroundColor: getBackgroundColor(),
+                    borderRadius: theme.borderRadius.xl,
+                    paddingHorizontal: theme.spacing.lg,
+                    ...theme.shadows.md
+                },
+                variant === 'ghost' && { borderWidth: 0, shadowOpacity: 0 },
                 style,
             ]}
             onPress={onPress}
@@ -72,12 +78,9 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        height: 56, // Taller touch target
-        borderRadius: theme.borderRadius.xl, // Pill shape or very rounded
+        height: 56,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: theme.spacing.lg,
-        ...theme.shadows.md,
-        marginVertical: theme.spacing.xs,
+        marginVertical: 4,
     },
 });

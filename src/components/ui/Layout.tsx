@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, StatusBar, ViewStyle, StatusBarStyle, Platform } from 'react-native';
+import { View, StyleSheet, StatusBar, ViewStyle, StatusBarStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { theme } from '../../theme/theme';
+import { useTheme } from '../../hooks/useTheme';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -13,18 +13,24 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({
     children,
     style,
-    barStyle = 'light-content',
+    barStyle,
     safeAreaEdges = ['top', 'left', 'right']
 }) => {
+    const { colors, theme, isDark } = useTheme();
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
             <StatusBar
-                barStyle={barStyle}
+                barStyle={barStyle || (isDark ? 'light-content' : 'dark-content')}
                 backgroundColor="transparent"
                 translucent
             />
             <SafeAreaView
-                style={[styles.safeArea, style]}
+                style={[
+                    styles.safeArea,
+                    { paddingHorizontal: theme.spacing.lg },
+                    style
+                ]}
                 edges={safeAreaEdges}
             >
                 {children}
@@ -36,10 +42,8 @@ export const Layout: React.FC<LayoutProps> = ({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: theme.colors.background,
     },
     safeArea: {
         flex: 1,
-        paddingHorizontal: theme.spacing.lg,
     },
 });

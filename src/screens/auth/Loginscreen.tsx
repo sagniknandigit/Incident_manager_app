@@ -9,12 +9,13 @@ import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { theme } from '../../theme/theme';
 import { Header } from '../../components/ui/Header';
+import { useTheme } from '../../hooks/useTheme';
 
 export default function LoginScreen() {
   const dispatch = useDispatch();
   const navigation = useNavigation<any>();
+  const { colors, theme } = useTheme();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -44,17 +45,17 @@ export default function LoginScreen() {
 
   return (
     <Layout>
-      <Header title="" />
+      <Header title="" showThemeToggle />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.contentContainer}>
-          <View style={styles.header}>
-            <Typography variant="h1" align="center" style={styles.title} color={theme.colors.primary}>
+        <ScrollView contentContainerStyle={[styles.contentContainer, { paddingBottom: theme.spacing.xxl }]}>
+          <View style={[styles.header, { marginBottom: theme.spacing.xl }]}>
+            <Typography variant="h1" align="center" style={[styles.title, { marginBottom: theme.spacing.sm }]} color={colors.primary}>
               Welcome Back
             </Typography>
-            <Typography variant="body" color={theme.colors.textSecondary} align="center">
+            <Typography variant="body" color={colors.textSecondary} align="center">
               Sign in to manage your incidents
             </Typography>
           </View>
@@ -78,12 +79,12 @@ export default function LoginScreen() {
             />
 
             {error ? (
-              <Typography style={styles.error} color={theme.colors.error}>
+              <Typography style={[styles.error, { marginBottom: theme.spacing.md }]} color={colors.error}>
                 {error}
               </Typography>
             ) : null}
 
-            <View style={styles.spacer} />
+            <View style={[styles.spacer, { height: theme.spacing.md }]} />
 
             <Button
               title="Sign In"
@@ -96,7 +97,7 @@ export default function LoginScreen() {
               title="Create an Account"
               onPress={() => navigation.navigate('Register')}
               variant="ghost"
-              style={styles.secondaryButton}
+              style={[styles.secondaryButton, { marginTop: theme.spacing.sm }] as any}
             />
           </View>
         </ScrollView>
@@ -109,25 +110,19 @@ const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingBottom: theme.spacing.xxl,
   },
   header: {
-    marginBottom: theme.spacing.xl,
   },
   title: {
-    marginBottom: theme.spacing.sm,
   },
   form: {
     width: '100%',
   },
   error: {
-    marginBottom: theme.spacing.md,
     textAlign: 'center',
   },
   spacer: {
-    height: theme.spacing.md,
   },
   secondaryButton: {
-    marginTop: theme.spacing.sm,
   },
 });

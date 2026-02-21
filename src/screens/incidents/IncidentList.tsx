@@ -2,15 +2,16 @@ import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
 import { Card } from '../../components/ui/Card';
-import { theme } from '../../theme/theme';
 import { useState, useCallback } from 'react';
 import { getIncidentsApi } from '../../api/incidentApi';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Header } from '../../components/ui/Header';
+import { useTheme } from '../../hooks/useTheme';
 
 export default function IncidentList() {
     const [incidents, setIncidents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { colors, theme } = useTheme();
 
     const fetchIncidents = async () => {
         setLoading(true);
@@ -34,10 +35,10 @@ export default function IncidentList() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'OPEN': return theme.colors.error;
-            case 'IN_PROGRESS': return theme.colors.warning;
-            case 'RESOLVED': return theme.colors.success;
-            default: return theme.colors.textSecondary;
+            case 'OPEN': return colors.error;
+            case 'IN_PROGRESS': return colors.warning;
+            case 'RESOLVED': return colors.success;
+            default: return colors.textSecondary;
         }
     };
 
@@ -46,26 +47,26 @@ export default function IncidentList() {
     const renderItem = ({ item }: { item: any }) => (
         <Card style={styles.card} onPress={() => navigation.navigate('IncidentDetails', { incident: item })}>
             <View style={styles.cardHeader}>
-                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20', borderColor: getStatusColor(item.status) + '50' }]}>
+                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20', borderColor: getStatusColor(item.status) + '50', borderRadius: theme.borderRadius.sm }] as any}>
                     <Typography variant="caption" style={{ color: getStatusColor(item.status), fontWeight: '700', fontSize: 12 }}>
                         {getStatusLabel(item.status)}
                     </Typography>
                 </View>
-                <Typography variant="caption" color={theme.colors.textSecondary} style={{ fontSize: 12 }}>{new Date(item.createdAt || Date.now()).toLocaleDateString()}</Typography>
+                <Typography variant="caption" color={colors.textSecondary} style={{ fontSize: 12 }}>{new Date(item.createdAt || Date.now()).toLocaleDateString()}</Typography>
             </View>
 
-            <Typography variant="h3" style={styles.cardTitle} numberOfLines={2}>{item.title}</Typography>
+            <Typography variant="h3" style={[styles.cardTitle, { color: colors.textPrimary }]} numberOfLines={2}>{item.title}</Typography>
 
-            <Typography variant="body" color={theme.colors.textSecondary} numberOfLines={2} style={styles.description}>
+            <Typography variant="body" color={colors.textSecondary} numberOfLines={2} style={styles.description}>
                 {item.description}
             </Typography>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             <View style={styles.cardFooter}>
                 <View style={styles.footerItem}>
-                    <Typography variant="caption" color={theme.colors.textDisabled}>Priority</Typography>
-                    <Typography variant="body" style={{ color: item.priority === 'CRITICAL' ? theme.colors.error : theme.colors.textPrimary, fontWeight: '600', marginLeft: 4 }}>
+                    <Typography variant="caption" color={colors.textDisabled}>Priority</Typography>
+                    <Typography variant="body" style={{ color: item.priority === 'CRITICAL' ? colors.error : colors.textPrimary, fontWeight: '600', marginLeft: 4 }}>
                         {item.priority}
                     </Typography>
                 </View>
@@ -74,12 +75,12 @@ export default function IncidentList() {
     );
 
     const renderEmpty = () => (
-        <View style={styles.emptyContainer}>
-            <View style={styles.emptyIcon}>
+        <View style={[styles.emptyContainer, { marginTop: theme.spacing.xxl, padding: theme.spacing.lg }]}>
+            <View style={[styles.emptyIcon, { borderRadius: theme.borderRadius.round, backgroundColor: colors.surfaceHighlight, marginBottom: theme.spacing.lg }]}>
                 <Typography variant="h1">📋</Typography>
             </View>
-            <Typography variant="h3" align="center" style={styles.emptyText}>No Incidents Found</Typography>
-            <Typography variant="body" align="center" color={theme.colors.textSecondary}>
+            <Typography variant="h3" align="center" style={[styles.emptyText, { marginBottom: theme.spacing.sm }]}>No Incidents Found</Typography>
+            <Typography variant="body" align="center" color={colors.textSecondary}>
                 You haven't reported any incidents yet.
             </Typography>
         </View>
@@ -92,10 +93,10 @@ export default function IncidentList() {
                 data={incidents}
                 renderItem={renderItem}
                 keyExtractor={item => item.id.toString()}
-                contentContainerStyle={styles.listContent}
+                contentContainerStyle={[styles.listContent, { paddingBottom: theme.spacing.xl }]}
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={!loading ? renderEmpty : null}
-                refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchIncidents} tintColor={theme.colors.primary} />}
+                refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchIncidents} tintColor={colors.primary} />}
             />
         </Layout>
     );
@@ -103,35 +104,31 @@ export default function IncidentList() {
 
 const styles = StyleSheet.create({
     listContent: {
-        paddingBottom: theme.spacing.xl,
     },
     card: {
-        marginBottom: theme.spacing.md,
+        marginBottom: 16,
     },
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: theme.spacing.sm,
+        marginBottom: 8,
     },
     cardTitle: {
-        marginBottom: theme.spacing.xs,
-        color: theme.colors.textPrimary,
+        marginBottom: 4,
     },
     description: {
-        marginBottom: theme.spacing.md,
+        marginBottom: 16,
         lineHeight: 22,
     },
     statusBadge: {
-        paddingHorizontal: theme.spacing.sm,
+        paddingHorizontal: 8,
         paddingVertical: 4,
-        borderRadius: theme.borderRadius.sm,
         borderWidth: 1,
     },
     divider: {
         height: 1,
-        backgroundColor: theme.colors.border,
-        marginBottom: theme.spacing.sm,
+        marginBottom: 8,
         opacity: 0.5,
     },
     cardFooter: {
@@ -144,20 +141,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     emptyContainer: {
-        marginTop: theme.spacing.xxl,
         alignItems: 'center',
-        padding: theme.spacing.lg,
     },
     emptyIcon: {
         width: 80,
         height: 80,
-        borderRadius: theme.borderRadius.round,
-        backgroundColor: theme.colors.surfaceHighlight,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: theme.spacing.lg,
     },
     emptyText: {
-        marginBottom: theme.spacing.sm,
     },
 });

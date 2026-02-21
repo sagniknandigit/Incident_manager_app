@@ -9,10 +9,13 @@ import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginSuccess, logout } from '../redux/authSlice';
 import { getCurrentUser } from '../api/authApi';
-import { View, ActivityIndicator } from 'react-native';
 import CreateIncident from '../screens/incidents/CreateIncident';
 import IncidentList from '../screens/incidents/IncidentList';
 import IncidentDetailsScreen from '../screens/manager/IncidentDetailsScreen';
+import AssignedIncidentsScreen from '../screens/engineer/AssignedIncidentsScreen';
+import UpdateIncidentStatusScreen from '../screens/engineer/UpdateIncidentStatusScreen';
+import MyIncidentsScreen from '../screens/reporter/MyIncidentsScreen';
+import SplashScreen from '../screens/SplashScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,7 +29,6 @@ export default function AppNavigator() {
       try {
         const token = await AsyncStorage.getItem('token');
         if (token) {
-          // Token exists, verify it and get user data
           const response = await getCurrentUser();
           dispatch(loginSuccess({ user: response.data, token }));
         }
@@ -35,7 +37,10 @@ export default function AppNavigator() {
         await AsyncStorage.removeItem('token');
         dispatch(logout());
       } finally {
-        setLoading(false);
+        // Keep splash for at least 2 seconds for branding
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000);
       }
     };
 
@@ -43,11 +48,7 @@ export default function AppNavigator() {
   }, [dispatch]);
 
   if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <SplashScreen />;
   }
 
   return (
@@ -60,6 +61,9 @@ export default function AppNavigator() {
             <Stack.Screen name="IncidentList" component={IncidentList} />
             <Stack.Screen name="AllIncidents" component={IncidentList} />
             <Stack.Screen name="IncidentDetails" component={IncidentDetailsScreen} />
+            <Stack.Screen name='AssignedIncidents' component={AssignedIncidentsScreen} />
+            <Stack.Screen name='UpdateStatus' component={UpdateIncidentStatusScreen} />
+            <Stack.Screen name='MyIncidents' component={MyIncidentsScreen} />
           </>
         ) : (
           <>

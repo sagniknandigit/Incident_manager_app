@@ -1,35 +1,4 @@
-export const theme = {
-    colors: {
-        // Brand - Vibrant & Premium
-        primary: '#6366f1', // Indigo 500 - Main action color
-        primaryDark: '#4338ca', // Indigo 700 - Pressed states
-        primaryLight: '#818cf8', // Indigo 400 - Accents
-        secondary: '#06b6d4', // Cyan 500 - Secondary actions
-        accent: '#f472b6', // Pink 400 - Highlights
-
-        // Backgrounds - Deep & Rich
-        background: '#0f172a', // Slate 900 - Main background
-        surface: '#1e293b', // Slate 800 - Card background
-        surfaceHighlight: '#334155', // Slate 700 - Hover/Pressed items
-        modal: '#1e293b',
-
-        // Text - High Contrast
-        textPrimary: '#f8fafc', // Slate 50 - Title text
-        textSecondary: '#94a3b8', // Slate 400 - Body/Label text
-        textInverse: '#ffffff', // Text on primary buttons
-        textDisabled: '#475569', // Slate 600
-
-        // Status
-        success: '#10b981', // Emerald 500
-        error: '#ef4444', // Red 500
-        warning: '#f59e0b', // Amber 500
-        info: '#3b82f6', // Blue 500
-
-        // UI Elements
-        border: '#334155', // Slate 700
-        placeholder: '#64748b', // Slate 500
-        backdrop: 'rgba(0, 0, 0, 0.5)',
-    },
+const common = {
     spacing: {
         xs: 4,
         sm: 8,
@@ -84,4 +53,58 @@ export const theme = {
             elevation: 8,
         },
     },
-} as const;
+};
+
+export const lightTheme = {
+    ...common,
+    colors: {
+        primary: '#6366f1',
+        primaryDark: '#4338ca',
+        primaryLight: '#818cf8',
+        secondary: '#06b6d4',
+        accent: '#f472b6',
+        background: '#f8fafc',
+        surface: '#ffffff',
+        surfaceHighlight: '#f1f5f9',
+        modal: '#ffffff',
+        textPrimary: '#0f172a',
+        textSecondary: '#475569',
+        textInverse: '#ffffff',
+        textDisabled: '#94a3b8',
+        success: '#10b981',
+        error: '#ef4444',
+        warning: '#f59e0b',
+        info: '#3b82f6',
+        border: '#e2e8f0',
+        placeholder: '#94a3b8',
+        backdrop: 'rgba(0, 0, 0, 0.3)',
+    },
+};
+
+export const darkTheme = {
+    ...common,
+    colors: {
+        primary: '#818cf8',
+        primaryDark: '#6366f1',
+        primaryLight: '#a5b4fc',
+        secondary: '#22d3ee',
+        accent: '#f472b6',
+        background: '#0f172a',
+        surface: '#1e293b',
+        surfaceHighlight: '#334155',
+        modal: '#1e293b',
+        textPrimary: '#f8fafc',
+        textSecondary: '#94a3b8',
+        textInverse: '#ffffff',
+        textDisabled: '#475569',
+        success: '#10b981',
+        error: '#ef4444',
+        warning: '#f59e0b',
+        info: '#3b82f6',
+        border: '#334155',
+        placeholder: '#64748b',
+        backdrop: 'rgba(0, 0, 0, 0.6)',
+    },
+};
+
+export const theme = darkTheme; // Default for backward compatibility during transition

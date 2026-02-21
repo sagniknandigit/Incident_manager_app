@@ -6,12 +6,13 @@ import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { theme } from '../../theme/theme';
+import { useTheme } from '../../hooks/useTheme';
 
 import { createIncidentApi } from '../../api/incidentApi';
 
 export default function CreateIncident() {
   const navigation = useNavigation<any>();
+  const { colors, theme } = useTheme();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -49,18 +50,15 @@ export default function CreateIncident() {
 
   return (
     <Layout>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Typography variant="h2">Report Incident</Typography>
-          <Typography
-            variant="body"
-            color={theme.colors.textSecondary}
-          >
+      <ScrollView contentContainerStyle={[styles.content, { paddingVertical: theme.spacing.lg }]}>
+        <View style={[styles.header, { marginBottom: theme.spacing.xl }]}>
+          <Typography variant="h2" color={colors.textPrimary}>Report Incident</Typography>
+          <Typography variant="body" color={colors.textSecondary}>
             Describe the issue in detail
           </Typography>
         </View>
 
-        <View style={styles.form}>
+        <View style={[styles.form, { backgroundColor: colors.surface, padding: theme.spacing.lg, borderRadius: theme.borderRadius.lg }]}>
           <Input
             label="Title"
             placeholder="e.g. Server Down"
@@ -79,16 +77,12 @@ export default function CreateIncident() {
             textAlignVertical="top"
           />
 
-          <View style={styles.prioritySection}>
-            <Typography
-              variant="caption"
-              color={theme.colors.textSecondary}
-              style={styles.label}
-            >
+          <View style={[styles.prioritySection, { marginBottom: theme.spacing.lg }]}>
+            <Typography variant="caption" color={colors.textSecondary} style={[styles.label, { marginBottom: theme.spacing.sm, marginLeft: theme.spacing.xs }]}>
               Priority
             </Typography>
 
-            <View style={styles.priorityGrid}>
+            <View style={[styles.priorityGrid, { gap: theme.spacing.sm }]}>
               {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const).map(
                 (p) => (
                   <Button
@@ -113,7 +107,7 @@ export default function CreateIncident() {
             title="Submit Report"
             onPress={handleSubmit}
             loading={loading}
-            style={styles.submitBtn}
+            style={[styles.submitBtn, { marginTop: theme.spacing.md }] as any}
           />
         </View>
       </ScrollView>
@@ -123,36 +117,26 @@ export default function CreateIncident() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingVertical: theme.spacing.lg,
   },
   header: {
-    marginBottom: theme.spacing.xl,
   },
   form: {
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.lg,
   },
   textArea: {
     minHeight: 100,
   },
   prioritySection: {
-    marginBottom: theme.spacing.lg,
   },
   label: {
-    marginBottom: theme.spacing.sm,
-    marginLeft: theme.spacing.xs,
   },
   priorityGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.sm,
   },
   priorityBtn: {
     flex: 1,
     minWidth: '45%',
   },
   submitBtn: {
-    marginTop: theme.spacing.md,
   },
 });

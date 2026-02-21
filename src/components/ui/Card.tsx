@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
-import { theme } from '../../theme/theme';
+import { useTheme } from '../../hooks/useTheme';
 
 interface CardProps {
     children: React.ReactNode;
@@ -15,12 +15,24 @@ export const Card: React.FC<CardProps> = ({
     variant = 'elevated',
     onPress
 }) => {
+    const { theme, colors } = useTheme();
+
     const CardContent = (
         <View style={[
             styles.container,
-            variant === 'elevated' && styles.elevated,
-            variant === 'outlined' && styles.outlined,
-            variant === 'flat' && styles.flat,
+            {
+                backgroundColor: colors.surface,
+                borderColor: colors.surfaceHighlight
+            },
+            variant === 'elevated' && { ...theme.shadows.md },
+            variant === 'outlined' && {
+                backgroundColor: 'transparent',
+                borderColor: colors.border,
+            },
+            variant === 'flat' && {
+                backgroundColor: colors.surfaceHighlight,
+                borderWidth: 0,
+            },
             style
         ]}>
             {children}
@@ -40,22 +52,8 @@ export const Card: React.FC<CardProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: theme.colors.surface,
-        borderRadius: theme.borderRadius.xl,
-        padding: theme.spacing.lg,
+        borderRadius: 16,
+        padding: 16,
         borderWidth: 1,
-        borderColor: theme.colors.surfaceHighlight, // Subtle border even for elevated
-    },
-    elevated: {
-        ...theme.shadows.md,
-    },
-    outlined: {
-        backgroundColor: 'transparent',
-        borderColor: theme.colors.border,
-        borderWidth: 1,
-    },
-    flat: {
-        backgroundColor: theme.colors.surfaceHighlight,
-        borderWidth: 0,
     }
 });

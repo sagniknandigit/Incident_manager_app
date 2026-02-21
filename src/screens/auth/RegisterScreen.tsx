@@ -9,12 +9,13 @@ import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { theme } from '../../theme/theme';
 import { Header } from '../../components/ui/Header';
+import { useTheme } from '../../hooks/useTheme';
 
 export default function RegisterScreen() {
   const dispatch = useDispatch();
   const navigation = useNavigation<any>();
+  const { colors, theme } = useTheme();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -46,17 +47,17 @@ export default function RegisterScreen() {
 
   return (
     <Layout>
-      <Header title="" showBack />
+      <Header title="" showBack showThemeToggle />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <Typography variant="h1" align="center" style={styles.title} color={theme.colors.primary}>
+        <ScrollView contentContainerStyle={[styles.contentContainer, { paddingBottom: theme.spacing.xxl }]} showsVerticalScrollIndicator={false}>
+          <View style={[styles.header, { marginBottom: theme.spacing.xl }]}>
+            <Typography variant="h1" align="center" style={[styles.title, { marginBottom: theme.spacing.sm }]} color={colors.primary}>
               Create Account
             </Typography>
-            <Typography variant="body" color={theme.colors.textSecondary} align="center">
+            <Typography variant="body" color={colors.textSecondary} align="center">
               Join to report and manage incidents
             </Typography>
           </View>
@@ -87,30 +88,30 @@ export default function RegisterScreen() {
               onChangeText={setPassword}
             />
 
-            <View style={styles.roleContainer}>
-              <Typography variant="caption" color={theme.colors.textSecondary} style={styles.roleLabel}>
+            <View style={[styles.roleContainer, { marginBottom: theme.spacing.md }]}>
+              <Typography variant="caption" color={colors.textSecondary} style={[styles.roleLabel, { marginBottom: theme.spacing.sm, marginLeft: theme.spacing.xs }]}>
                 Select Role
               </Typography>
-              <View style={styles.roleButtons}>
+              <View style={[styles.roleButtons, { gap: theme.spacing.xs }]}>
                 {(['REPORTER', 'ENGINEER', 'MANAGER'] as const).map((r) => (
                   <Button
                     key={r}
                     title={r}
                     variant={role === r ? 'primary' : 'secondary'}
                     onPress={() => setRole(r)}
-                    style={[styles.roleButton, role !== r ? { opacity: 0.7 } : undefined]}
+                    style={[styles.roleButton, role !== r ? { opacity: 0.7 } : undefined] as any}
                   />
                 ))}
               </View>
             </View>
 
             {error ? (
-              <Typography style={styles.error} color={theme.colors.error}>
+              <Typography style={[styles.error, { marginBottom: theme.spacing.md }]} color={colors.error}>
                 {error}
               </Typography>
             ) : null}
 
-            <View style={styles.spacer} />
+            <View style={[styles.spacer, { height: theme.spacing.md }]} />
 
             <Button
               title="Sign Up"
@@ -123,7 +124,7 @@ export default function RegisterScreen() {
               title="Already have an account? Sign In"
               onPress={() => navigation.navigate('Login')}
               variant="ghost"
-              style={styles.secondaryButton}
+              style={[styles.secondaryButton, { marginTop: theme.spacing.sm }] as any}
             />
           </View>
         </ScrollView>
@@ -136,39 +137,29 @@ const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingBottom: theme.spacing.xxl,
   },
   header: {
-    marginBottom: theme.spacing.xl,
   },
   title: {
-    marginBottom: theme.spacing.sm,
   },
   form: {
     width: '100%',
   },
   error: {
-    marginBottom: theme.spacing.md,
     textAlign: 'center',
   },
   spacer: {
-    height: theme.spacing.md,
   },
   secondaryButton: {
-    marginTop: theme.spacing.sm,
   },
   roleContainer: {
-    marginBottom: theme.spacing.md,
   },
   roleLabel: {
-    marginBottom: theme.spacing.sm,
-    marginLeft: theme.spacing.xs,
     fontWeight: '600',
   },
   roleButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: theme.spacing.xs,
   },
   roleButton: {
     flex: 1,

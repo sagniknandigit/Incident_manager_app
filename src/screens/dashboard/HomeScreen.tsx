@@ -7,26 +7,21 @@ import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { theme } from '../../theme/theme';
 import { useNavigation } from '@react-navigation/native';
 import { Header } from '../../components/ui/Header';
 import { useState } from 'react';
+import { useTheme } from '../../hooks/useTheme';
 
 export default function HomeScreen() {
   const dispatch = useDispatch();
   const navigation = useNavigation<any>();
   const user = useSelector((state: RootState) => state.auth.user);
   const [refreshing, setRefreshing] = useState(false);
+  const { colors, theme } = useTheme();
 
   const onRefresh = () => {
     setRefreshing(true);
-    // Simulate refresh for now, or fetch fresh user data
     setTimeout(() => setRefreshing(false), 1000);
-  };
-
-  const checkToken = async () => {
-    const token = await AsyncStorage.getItem('token');
-    alert(token ? `Token found: ${token.substring(0, 10)}...` : 'NO TOKEN FOUND');
   };
 
   const handleLogout = async () => {
@@ -36,20 +31,40 @@ export default function HomeScreen() {
 
   const renderDashboardCard = (title: string, description: string, onPress?: () => void, variant: 'primary' | 'secondary' = 'primary') => (
     <Card
-      style={[styles.card, variant === 'primary' ? styles.cardPrimary : undefined] as any}
+      style={[
+        styles.card,
+        { backgroundColor: variant === 'primary' ? colors.primary : colors.surface }
+      ] as any}
       onPress={onPress}
       variant="elevated"
     >
       <View style={styles.cardContent}>
         <View style={{ flex: 1 }}>
-          <Typography variant="h3" style={[styles.cardTitle, variant === 'primary' && { color: theme.colors.textInverse }]}>{title}</Typography>
-          <Typography variant="body" color={variant === 'primary' ? theme.colors.textInverse : theme.colors.textSecondary} style={{ opacity: 0.9 }}>{description}</Typography>
+          <Typography variant="h3" style={[styles.cardTitle, { color: variant === 'primary' ? colors.textInverse : colors.textPrimary }]}>{title}</Typography>
+          <Typography variant="body" color={variant === 'primary' ? colors.textInverse : colors.textSecondary} style={{ opacity: 0.9 }}>{description}</Typography>
         </View>
-        <View style={[styles.arrowIcon, variant === 'primary' && { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-          <Typography variant="h3" color={variant === 'primary' ? theme.colors.textInverse : theme.colors.primary}>→</Typography>
+        <View style={[styles.arrowIcon, { backgroundColor: variant === 'primary' ? 'rgba(255,255,255,0.2)' : colors.surfaceHighlight }]}>
+          <Typography variant="h3" color={variant === 'primary' ? colors.textInverse : colors.primary}>→</Typography>
         </View>
       </View>
     </Card>
+  );
+
+  const renderQuickStats = () => (
+    <View style={[styles.statsRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={styles.statItem}>
+        <Typography variant="h2" color={colors.primary}>12</Typography>
+        <Typography variant="caption" color={colors.textSecondary}>Total</Typography>
+      </View>
+      <View style={styles.statItem}>
+        <Typography variant="h2" color={colors.warning}>4</Typography>
+        <Typography variant="caption" color={colors.textSecondary}>Pending</Typography>
+      </View>
+      <View style={styles.statItem}>
+        <Typography variant="h2" color={colors.success}>8</Typography>
+        <Typography variant="caption" color={colors.textSecondary}>Resolved</Typography>
+      </View>
+    </View>
   );
 
   return (
@@ -66,53 +81,50 @@ export default function HomeScreen() {
         }
       />
       <ScrollView
-        contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />}
+        contentContainerStyle={[styles.content, { paddingBottom: theme.spacing.xxl }]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        showsVerticalScrollIndicator={false}
       >
         <View style={styles.welcomeSection}>
-          <Typography variant="body" color={theme.colors.textSecondary}>Welcome back,</Typography>
-          <Typography variant="h1" color={theme.colors.textPrimary} style={styles.userName}>{user?.name}</Typography>
-
-          <View style={styles.roleBadge}>
-            <Typography variant="caption" color={theme.colors.primary} style={styles.roleText}>
-              {user?.role} ACCOUNT
+          <View>
+            <Typography variant="body" color={colors.textSecondary}>Welcome back,</Typography>
+            <Typography variant="h1" color={colors.textPrimary} style={styles.userName}>{user?.name}</Typography>
+          </View>
+          <View style={[styles.roleBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
+            <Typography variant="caption" color={colors.primary} style={styles.roleText}>
+              {user?.role}
             </Typography>
           </View>
         </View>
 
+        {renderQuickStats()}
+
         <View style={styles.section}>
-          <Typography variant="subtitle" color={theme.colors.textSecondary} style={styles.sectionTitle}>Overview</Typography>
+          <View style={styles.sectionHeader}>
+            <Typography variant="subtitle" color={colors.textPrimary}>Quick Actions</Typography>
+          </View>
 
           {user?.role === 'REPORTER' && (
             <>
               {renderDashboardCard('Report Incident', 'Create a new maintenance request', () => navigation.navigate('CreateIncident'), 'primary')}
-              {renderDashboardCard('My Incidents', 'Track status of your reports', () => navigation.navigate('IncidentList'), 'secondary')}
+              {renderDashboardCard('My Incidents', 'Track status of your reports', () => navigation.navigate('MyIncidents'), 'secondary')}
             </>
           )}
 
           {user?.role === 'ENGINEER' && (
             <>
-              {renderDashboardCard('Assigned Tasks', 'View tickets assigned to you', () => navigation.navigate('IncidentList'), 'primary')}
-              {renderDashboardCard('Resolved History', 'View past completed work', () => navigation.navigate('IncidentList'), 'secondary')}
+              {renderDashboardCard('Assigned Tasks', 'View tickets assigned to you', () => navigation.navigate('AssignedIncidents'), 'primary')}
+              {renderDashboardCard('Work History', 'View past completed work', () => navigation.navigate('IncidentList'), 'secondary')}
             </>
           )}
 
           {user?.role === 'MANAGER' && (
             <>
               {renderDashboardCard('All Incidents', 'Overview of all system activity', () => navigation.navigate('IncidentList'), 'primary')}
-              {renderDashboardCard('Team Stats', 'Performance metrics', () => { }, 'secondary')}
+              {renderDashboardCard('Engineer Directory', 'Performance and availability', () => { }, 'secondary')}
             </>
           )}
         </View>
-
-        {/* <View style={styles.footer}>
-          <Button
-            title="DEBUG: Check Token"
-            onPress={checkToken}
-            variant="ghost"
-            style={styles.debugBtn}
-          />
-        </View> */}
       </ScrollView>
     </Layout>
   );
@@ -120,43 +132,55 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingBottom: theme.spacing.xxl,
+    // paddingBottom set dynamically
   },
   welcomeSection: {
-    marginBottom: theme.spacing.xl,
-    marginTop: theme.spacing.sm,
+    marginBottom: 24,
+    marginTop: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   userName: {
-    marginBottom: theme.spacing.sm,
+    marginTop: 2,
   },
   roleBadge: {
-    backgroundColor: theme.colors.surfaceHighlight,
-    paddingHorizontal: theme.spacing.md,
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: theme.borderRadius.round,
-    alignSelf: 'flex-start',
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: theme.colors.border,
   },
   roleText: {
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontWeight: '800',
+    letterSpacing: 1,
+    fontSize: 10,
   },
-  section: {
-    marginBottom: theme.spacing.xl,
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 32,
+    borderWidth: 1,
+  },
+  statItem: {
+    alignItems: 'center',
     flex: 1,
   },
-  sectionTitle: {
-    marginBottom: theme.spacing.md,
-    marginLeft: theme.spacing.xs,
+  section: {
+    marginBottom: 32,
+    flex: 1,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    paddingLeft: 4,
   },
   card: {
-    marginBottom: theme.spacing.md,
+    marginBottom: 16,
     borderWidth: 0,
-    backgroundColor: theme.colors.surface,
-  },
-  cardPrimary: {
-    backgroundColor: theme.colors.primary,
   },
   cardContent: {
     flexDirection: 'row',
@@ -164,22 +188,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   cardTitle: {
-    marginBottom: theme.spacing.xs,
-    color: theme.colors.textPrimary,
+    marginBottom: 4,
   },
   arrowIcon: {
     width: 40,
     height: 40,
-    borderRadius: theme.borderRadius.round,
-    backgroundColor: theme.colors.surfaceHighlight,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: theme.spacing.md,
+    marginLeft: 16,
   },
-  footer: {
-    marginTop: theme.spacing.xl,
-  },
-  debugBtn: {
-    opacity: 0.5,
-  }
 });
+

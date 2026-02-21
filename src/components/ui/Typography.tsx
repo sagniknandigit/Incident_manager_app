@@ -1,6 +1,6 @@
 import React from 'react';
-import { Text, TextProps, StyleSheet, TextStyle } from 'react-native';
-import { theme } from '../../theme/theme';
+import { Text, TextProps, TextStyle } from 'react-native';
+import { useTheme } from '../../hooks/useTheme';
 
 interface TypographyProps extends TextProps {
     variant?: 'h1' | 'h2' | 'h3' | 'subtitle' | 'body' | 'caption' | 'button';
@@ -11,16 +11,18 @@ interface TypographyProps extends TextProps {
 export const Typography: React.FC<TypographyProps> = ({
     children,
     variant = 'body',
-    color = theme.colors.textPrimary,
+    color,
     align = 'left',
     style,
     ...props
 }) => {
-    const textStyle: TextStyle = {
-        ...theme.typography[variant],
-        color,
+    const { theme, colors } = useTheme();
+
+    const textStyle = {
+        ...(theme.typography[variant] as any),
+        color: color || colors.textPrimary,
         textAlign: align,
-    };
+    } as TextStyle;
 
     return (
         <Text style={[textStyle, style]} {...props}>

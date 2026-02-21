@@ -39,15 +39,7 @@ export const getAllIncidents = async (req: Request, res: Response) => {
     res.json(incidents);
 };
 
-export const updateIncidentStatus = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { status } = req.body;
-    const incident = prisma.incident.update({
-        where: { id: Number(id) },
-        data: { status },
-    });
-    res.json(incident);
-};
+
 
 export const assignIncident = async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -64,4 +56,50 @@ export const assignIncident = async (req: Request, res: Response) => {
     } catch (error) {
         res.status(500).json({ message: 'Error assigning incident', error });
     }
+};
+
+export const getAssignedIncidents = async (req: Request, res: Response) => {
+    const user = (req as any).user;
+    const incidents = await prisma.incident.findMany({
+        where: { engineerId: user.userId },
+        include: {
+            reporter: {
+                select: { name: true }
+            }
+        },
+    });
+    res.json(incidents);
+};
+
+export const updateIncidentStatus = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    const user = (req as any).user;
+
+    const incident = await prisma.incident.update({
+        where: {
+            id: Number(id),
+            engineerId: user.userId // Optional: ensure only assigned engineer can update
+        },
+        data: { status },
+    });
+    res.json(incident);
+};
+
+export const getMyIncidents = async (req: Request, res: Response) => {
+    const user = (req as any).user;
+    const incidents = await prisma.incident.findMany({
+        where: {
+            reporterId: user.userId,
+        },
+        include: {
+            engineer: {
+                select: { name: true },
+            },
+        },
+        orderBy: {
+            createdAt: 'desc',
+        },
+    });
+    res.json(incidents);
 };
