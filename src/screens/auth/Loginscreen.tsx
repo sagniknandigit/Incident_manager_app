@@ -1,4 +1,4 @@
-import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { loginApi } from '../../api/authApi';
@@ -11,6 +11,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Header } from '../../components/ui/Header';
 import { useTheme } from '../../hooks/useTheme';
+import { Card } from '../../components/ui/Card';
 
 export default function LoginScreen() {
   const dispatch = useDispatch();
@@ -50,13 +51,22 @@ export default function LoginScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={[styles.contentContainer, { paddingBottom: theme.spacing.xxl }]}>
-          <View style={[styles.header, { marginBottom: theme.spacing.xl }]}>
-            <Typography variant="h1" align="center" style={[styles.title, { marginBottom: theme.spacing.sm }]} color={colors.primary}>
-              Welcome Back
+        <ScrollView
+          contentContainerStyle={[styles.contentContainer, { paddingBottom: theme.spacing.xxl }]}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.brandingContainer}>
+            <Card variant="glass" padding="none" style={styles.logoWrapper as any}>
+              <Image
+                source={require('../../assets/images/logo.png')}
+                style={styles.logo}
+              />
+            </Card>
+            <Typography variant="h1" align="center" style={styles.title} color={colors.textPrimary}>
+              Welcome <Typography variant="h1" color={colors.primary}>Back</Typography>
             </Typography>
-            <Typography variant="body" color={colors.textSecondary} align="center">
-              Sign in to manage your incidents
+            <Typography variant="body" color={colors.textSecondary} align="center" style={styles.subtitle}>
+              Secure access to the Incident Management portal
             </Typography>
           </View>
 
@@ -79,12 +89,14 @@ export default function LoginScreen() {
             />
 
             {error ? (
-              <Typography style={[styles.error, { marginBottom: theme.spacing.md }]} color={colors.error}>
-                {error}
-              </Typography>
+              <View style={[styles.errorContainer, { backgroundColor: colors.error + '10' }]}>
+                <Typography variant="caption" color={colors.error} align="center">
+                  {error}
+                </Typography>
+              </View>
             ) : null}
 
-            <View style={[styles.spacer, { height: theme.spacing.md }]} />
+            <View style={{ height: theme.spacing.lg }} />
 
             <Button
               title="Sign In"
@@ -93,12 +105,19 @@ export default function LoginScreen() {
               variant="primary"
             />
 
-            <Button
-              title="Create an Account"
-              onPress={() => navigation.navigate('Register')}
-              variant="ghost"
-              style={[styles.secondaryButton, { marginTop: theme.spacing.sm }] as any}
-            />
+            <View style={styles.footer}>
+              <Typography variant="caption" color={colors.textSecondary}>
+                Don't have an account?{' '}
+                <Typography
+                  variant="caption"
+                  color={colors.primary}
+                  style={{ fontWeight: '700' }}
+                  onPress={() => navigation.navigate('Register')}
+                >
+                  Create one
+                </Typography>
+              </Typography>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -109,20 +128,44 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 40,
   },
-  header: {
+  brandingContainer: {
+    alignItems: 'center',
+    marginBottom: 48,
+  },
+  logoWrapper: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  logo: {
+    width: '60%',
+    height: '60%',
+    resizeMode: 'contain',
   },
   title: {
+    fontSize: 28,
+    marginBottom: 8,
+  },
+  subtitle: {
+    opacity: 0.7,
+    maxWidth: '80%',
   },
   form: {
     width: '100%',
   },
-  error: {
-    textAlign: 'center',
+  errorContainer: {
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
   },
-  spacer: {
-  },
-  secondaryButton: {
+  footer: {
+    marginTop: 24,
+    alignItems: 'center',
   },
 });

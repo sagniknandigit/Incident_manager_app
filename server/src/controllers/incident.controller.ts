@@ -103,3 +103,29 @@ export const getMyIncidents = async (req: Request, res: Response) => {
     });
     res.json(incidents);
 };
+
+export const getIncidentStats=async(req:Request,res:Response)=>{
+    try{
+        const total=await prisma.incident.count();
+        const grouped=await prisma.incident.groupBy({
+            by:['status'],
+            _count:{status:true,},
+        });
+
+        const stats={
+            total,
+            OPEN:0,
+            IN_PROGRESS:0,
+            RESOLVED:0,
+            CLOSED:0,
+        };
+        grouped.forEach((item)=>{
+            stats[item.status]=item._count.status;
+        });
+        res.json(stats);
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).json({message:'Failed to fetch stats'});
+    }
+};

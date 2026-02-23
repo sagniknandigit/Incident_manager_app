@@ -16,6 +16,7 @@ import AssignedIncidentsScreen from '../screens/engineer/AssignedIncidentsScreen
 import UpdateIncidentStatusScreen from '../screens/engineer/UpdateIncidentStatusScreen';
 import MyIncidentsScreen from '../screens/reporter/MyIncidentsScreen';
 import SplashScreen from '../screens/SplashScreen';
+import StatsDashboardScreen from '../screens/manager/StatsDashboardScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -64,6 +65,7 @@ export default function AppNavigator() {
             <Stack.Screen name='AssignedIncidents' component={AssignedIncidentsScreen} />
             <Stack.Screen name='UpdateStatus' component={UpdateIncidentStatusScreen} />
             <Stack.Screen name='MyIncidents' component={MyIncidentsScreen} />
+            <Stack.Screen name='StatsDashboard' component={StatsDashboardScreen}/>
           </>
         ) : (
           <>

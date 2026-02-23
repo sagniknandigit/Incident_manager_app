@@ -16,15 +16,15 @@ export const IncidentStatusBadge: React.FC<IncidentStatusBadgeProps> = ({ status
     const getStatusConfig = (s: string) => {
         switch (s) {
             case 'OPEN':
-                return { color: colors.error, label: 'OPEN' };
+                return { color: colors.error, bg: colors.errorLight, label: 'OPEN' };
             case 'IN_PROGRESS':
-                return { color: colors.warning, label: 'IN PROGRESS' };
+                return { color: colors.warning, bg: colors.warningLight, label: 'IN PROGRESS' };
             case 'RESOLVED':
-                return { color: colors.success, label: 'RESOLVED' };
+                return { color: colors.success, bg: colors.successLight, label: 'RESOLVED' };
             case 'CLOSED':
-                return { color: colors.textDisabled, label: 'CLOSED' };
+                return { color: colors.textDisabled, bg: colors.surfaceHighlight, label: 'CLOSED' };
             default:
-                return { color: colors.textSecondary, label: s };
+                return { color: colors.textSecondary, bg: colors.surfaceHighlight, label: s };
         }
     };
 
@@ -33,12 +33,13 @@ export const IncidentStatusBadge: React.FC<IncidentStatusBadgeProps> = ({ status
     return (
         <View style={[
             styles.badge,
-            { backgroundColor: config.color + '20', borderColor: config.color + '50' },
+            { backgroundColor: config.bg, borderColor: config.color + '20' },
             style
         ]}>
+            <View style={[styles.dot, { backgroundColor: config.color }]} />
             <Typography
                 variant="caption"
-                style={{ color: config.color, fontWeight: '700', fontSize: 11, letterSpacing: 0.5 }}
+                style={{ color: config.color, fontWeight: '800', fontSize: 10, letterSpacing: 0.8 }}
             >
                 {config.label}
             </Typography>
@@ -48,10 +49,18 @@ export const IncidentStatusBadge: React.FC<IncidentStatusBadgeProps> = ({ status
 
 const styles = StyleSheet.create({
     badge: {
-        paddingHorizontal: 8,
-        paddingVertical: 3,
-        borderRadius: 4,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 12,
         borderWidth: 1,
         alignSelf: 'flex-start',
     },
+    dot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        marginRight: 6,
+    }
 });

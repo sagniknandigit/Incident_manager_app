@@ -29,3 +29,7 @@ export const updateIncidentStatusApi=(incidentId:number,status:string)=>{
 export const getMyIncidentsApi=()=>{
   return apiClient.get('/incidents/my');
 };
+
+export const getIncidentStatsApi=()=>{
+  return apiClient.get('/incidents/stats');
+};

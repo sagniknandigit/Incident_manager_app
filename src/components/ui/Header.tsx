@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, StyleSheet, TouchableOpacity, Image, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../hooks/useTheme';
 import { Typography } from './Typography';
@@ -24,6 +24,37 @@ export const Header: React.FC<HeaderProps> = ({
     const { colors, theme, isDark } = useTheme();
     const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.auth.user);
+    const scrollY = useRef(new Animated.Value(0)).current;
+
+    // Animations
+    const avatarScale = useRef(new Animated.Value(0)).current;
+    const pulseAnim = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+        // Entry animation
+        Animated.spring(avatarScale, {
+            toValue: 1,
+            useNativeDriver: true,
+            tension: 50,
+            friction: 7,
+        }).start();
+
+        // Subtle pulse loop
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(pulseAnim, {
+                    toValue: 1.05,
+                    duration: 2000,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(pulseAnim, {
+                    toValue: 1,
+                    duration: 2000,
+                    useNativeDriver: true,
+                })
+            ])
+        ).start();
+    }, [user]);
 
     const getProfileImage = () => {
         if (!user) return null;
@@ -41,17 +72,22 @@ export const Header: React.FC<HeaderProps> = ({
 
     const profileImg = getProfileImage();
 
+    const renderHeaderButton = (onPress: () => void, content: React.ReactNode, style?: any) => (
+        <TouchableOpacity
+            onPress={onPress}
+            style={[styles.headerButton, { backgroundColor: colors.surfaceHighlight }, style]}
+            activeOpacity={0.7}
+        >
+            {content}
+        </TouchableOpacity>
+    );
+
     return (
         <View style={styles.container}>
             <View style={styles.leftContainer}>
-                {showBack && (
-                    <TouchableOpacity
-                        onPress={() => navigation.goBack()}
-                        style={[styles.backButton, { backgroundColor: colors.surfaceHighlight }]}
-                        activeOpacity={0.7}
-                    >
-                        <Typography variant="h3" color={colors.textPrimary}>{'<'}</Typography>
-                    </TouchableOpacity>
+                {showBack && renderHeaderButton(() => navigation.goBack(),
+                    <Typography variant="h3" color={colors.textPrimary}>{'<'}</Typography>,
+                    styles.backButton
                 )}
             </View>
 
@@ -62,19 +98,23 @@ export const Header: React.FC<HeaderProps> = ({
             </View>
 
             <View style={styles.rightContainer}>
-                {showThemeToggle && (
-                    <TouchableOpacity
-                        onPress={() => dispatch(toggleTheme())}
-                        style={[styles.themeToggle, { backgroundColor: colors.surfaceHighlight }]}
-                        activeOpacity={0.7}
-                    >
-                        <Typography variant="caption">{isDark ? '🌙' : '☀️'}</Typography>
-                    </TouchableOpacity>
+                {showThemeToggle && renderHeaderButton(() => dispatch(toggleTheme()),
+                    <Typography variant="caption">{isDark ? '🌙' : '☀️'}</Typography>,
+                    styles.themeToggle
                 )}
                 {profileImg && (
-                    <View style={[styles.profileContainer, { borderColor: colors.primary + '30' }]}>
-                        <Image source={profileImg} style={styles.profileImage} />
-                    </View>
+                    <Animated.View style={[
+                        styles.profileContainer,
+                        {
+                            borderColor: colors.primary + '40',
+                            transform: [
+                                { scale: Animated.multiply(avatarScale, pulseAnim) }
+                            ],
+                            opacity: avatarScale
+                        }
+                    ]}>
+                        <Image source={profileImg} style={styles.profileImage as any} />
+                    </Animated.View>
                 )}
                 {rightAction}
             </View>
@@ -106,23 +146,27 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-end',
     },
-    backButton: {
+    headerButton: {
         padding: 8,
         borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    backButton: {
+        // specific back button styles if needed
     },
     themeToggle: {
-        padding: 8,
-        borderRadius: 20,
         marginRight: 8,
     },
     profileContainer: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 38,
+        height: 38,
+        borderRadius: 19,
         borderWidth: 2,
         overflow: 'hidden',
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.05)',
     },
     profileImage: {
         width: '100%',
@@ -131,5 +175,6 @@ const styles = StyleSheet.create({
     },
     title: {
         textTransform: 'capitalize',
+        fontWeight: '700',
     }
 });

@@ -2,6 +2,8 @@ import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
 import { Card } from '../../components/ui/Card';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { IncidentStatusBadge } from '../../components/ui/IncidentStatusBadge';
 import { useState, useCallback } from 'react';
 import { getIncidentsApi } from '../../api/incidentApi';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -12,6 +14,7 @@ export default function IncidentList() {
     const [incidents, setIncidents] = useState([]);
     const [loading, setLoading] = useState(true);
     const { colors, theme } = useTheme();
+    const navigation = useNavigation<any>();
 
     const fetchIncidents = async () => {
         setLoading(true);
@@ -31,72 +34,66 @@ export default function IncidentList() {
         }, [])
     );
 
-    const navigation = useNavigation<any>();
+    const renderItem = ({ item }: { item: any }) => {
+        return (
+            <Card style={styles.card as any} onPress={() => navigation.navigate('IncidentDetails', { incident: item })}>
+                <View style={styles.cardHeader}>
+                    <IncidentStatusBadge status={item.status} />
+                    <Typography variant="caption" color={colors.textDisabled}>
+                        {new Date(item.createdAt || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </Typography>
+                </View>
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'OPEN': return colors.error;
-            case 'IN_PROGRESS': return colors.warning;
-            case 'RESOLVED': return colors.success;
-            default: return colors.textSecondary;
-        }
+                <Typography variant="h3" style={styles.cardTitle} numberOfLines={1}>{item.title}</Typography>
+
+                <Typography variant="body" color={colors.textSecondary} numberOfLines={2} style={styles.description}>
+                    {item.description}
+                </Typography>
+
+                <View style={[styles.footer, { borderTopColor: colors.border }]}>
+                    <View style={styles.priorityContainer}>
+                        <View style={[
+                            styles.priorityDot,
+                            { backgroundColor: item.priority === 'CRITICAL' ? colors.error : colors.primaryLight }
+                        ]} />
+                        <Typography variant="caption" color={colors.textSecondary} style={{ fontWeight: '600' }}>
+                            {item.priority}
+                        </Typography>
+                    </View>
+                    <Typography variant="caption" color={colors.primary} style={{ fontWeight: '700' }}>
+                        VIEW DETAILS →
+                    </Typography>
+                </View>
+            </Card>
+        );
     };
-
-    const getStatusLabel = (status: string) => status.replace('_', ' ');
-
-    const renderItem = ({ item }: { item: any }) => (
-        <Card style={styles.card} onPress={() => navigation.navigate('IncidentDetails', { incident: item })}>
-            <View style={styles.cardHeader}>
-                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20', borderColor: getStatusColor(item.status) + '50', borderRadius: theme.borderRadius.sm }] as any}>
-                    <Typography variant="caption" style={{ color: getStatusColor(item.status), fontWeight: '700', fontSize: 12 }}>
-                        {getStatusLabel(item.status)}
-                    </Typography>
-                </View>
-                <Typography variant="caption" color={colors.textSecondary} style={{ fontSize: 12 }}>{new Date(item.createdAt || Date.now()).toLocaleDateString()}</Typography>
-            </View>
-
-            <Typography variant="h3" style={[styles.cardTitle, { color: colors.textPrimary }]} numberOfLines={2}>{item.title}</Typography>
-
-            <Typography variant="body" color={colors.textSecondary} numberOfLines={2} style={styles.description}>
-                {item.description}
-            </Typography>
-
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
-
-            <View style={styles.cardFooter}>
-                <View style={styles.footerItem}>
-                    <Typography variant="caption" color={colors.textDisabled}>Priority</Typography>
-                    <Typography variant="body" style={{ color: item.priority === 'CRITICAL' ? colors.error : colors.textPrimary, fontWeight: '600', marginLeft: 4 }}>
-                        {item.priority}
-                    </Typography>
-                </View>
-            </View>
-        </Card>
-    );
-
-    const renderEmpty = () => (
-        <View style={[styles.emptyContainer, { marginTop: theme.spacing.xxl, padding: theme.spacing.lg }]}>
-            <View style={[styles.emptyIcon, { borderRadius: theme.borderRadius.round, backgroundColor: colors.surfaceHighlight, marginBottom: theme.spacing.lg }]}>
-                <Typography variant="h1">📋</Typography>
-            </View>
-            <Typography variant="h3" align="center" style={[styles.emptyText, { marginBottom: theme.spacing.sm }]}>No Incidents Found</Typography>
-            <Typography variant="body" align="center" color={colors.textSecondary}>
-                You haven't reported any incidents yet.
-            </Typography>
-        </View>
-    );
 
     return (
         <Layout>
-            <Header title="Incidents" showBack />
+            <Header title="Incident Feed" showBack />
             <FlatList
                 data={incidents}
                 renderItem={renderItem}
                 keyExtractor={item => item.id.toString()}
                 contentContainerStyle={[styles.listContent, { paddingBottom: theme.spacing.xl }]}
                 showsVerticalScrollIndicator={false}
-                ListEmptyComponent={!loading ? renderEmpty : null}
-                refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchIncidents} tintColor={colors.primary} />}
+                ListEmptyComponent={!loading ? (
+                    <EmptyState
+                        title="No Incidents Reported"
+                        description="Your operational feed is currently clear. Any new reports will appear here in real-time."
+                        icon="🛡️"
+                        actionLabel="Report Incident"
+                        onAction={() => navigation.navigate('CreateIncident')}
+                    />
+                ) : null}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={loading}
+                        onRefresh={fetchIncidents}
+                        tintColor={colors.primary}
+                        colors={[colors.primary]}
+                    />
+                }
             />
         </Layout>
     );
@@ -104,51 +101,44 @@ export default function IncidentList() {
 
 const styles = StyleSheet.create({
     listContent: {
+        paddingHorizontal: 16,
+        paddingTop: 8,
+        flexGrow: 1,
     },
     card: {
         marginBottom: 16,
+        borderRadius: 20,
     },
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: 12,
     },
     cardTitle: {
-        marginBottom: 4,
+        marginBottom: 6,
+        fontWeight: '700',
     },
     description: {
         marginBottom: 16,
-        lineHeight: 22,
+        lineHeight: 20,
+        fontSize: 14,
     },
-    statusBadge: {
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderWidth: 1,
-    },
-    divider: {
-        height: 1,
-        marginBottom: 8,
-        opacity: 0.5,
-    },
-    cardFooter: {
+    footer: {
         flexDirection: 'row',
-        alignItems: 'center',
         justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: 12,
+        borderTopWidth: 1,
     },
-    footerItem: {
+    priorityContainer: {
         flexDirection: 'row',
         alignItems: 'center',
     },
-    emptyContainer: {
-        alignItems: 'center',
-    },
-    emptyIcon: {
-        width: 80,
-        height: 80,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    emptyText: {
+    priorityDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        marginRight: 6,
     },
 });

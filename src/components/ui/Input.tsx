@@ -26,7 +26,7 @@ export const Input: React.FC<InputProps> = ({
                     color={isFocused ? colors.primary : colors.textSecondary}
                     style={styles.label}
                 >
-                    {label}
+                    {label.toUpperCase()}
                 </Typography>
             )}
             <View style={[
@@ -34,15 +34,22 @@ export const Input: React.FC<InputProps> = ({
                 {
                     backgroundColor: colors.surface,
                     borderColor: colors.border,
-                    borderRadius: theme.borderRadius.lg,
+                    borderRadius: theme.borderRadius.md,
                 },
-                isFocused && { borderColor: colors.primary, backgroundColor: colors.surfaceHighlight },
-                !!error && { borderColor: colors.error }
+                isFocused && {
+                    borderColor: colors.primary,
+                    backgroundColor: colors.surfaceHighlight,
+                    borderWidth: 2,
+                },
+                !!error && { borderColor: colors.error, borderWidth: 2 }
             ]}>
                 <TextInput
                     style={[
                         styles.input,
-                        { color: colors.textPrimary },
+                        {
+                            color: colors.textPrimary,
+                            paddingTop: isFocused || props.value ? 10 : 0,
+                        },
                         style
                     ]}
                     placeholderTextColor={colors.placeholder}
@@ -56,7 +63,7 @@ export const Input: React.FC<InputProps> = ({
                 <Typography
                     variant="caption"
                     color={colors.error}
-                    style={styles.error}
+                    style={styles.errorText}
                 >
                     {error}
                 </Typography>
@@ -67,24 +74,28 @@ export const Input: React.FC<InputProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        marginBottom: 16,
+        marginBottom: 20,
     },
     label: {
-        marginBottom: 4,
-        marginLeft: 4,
-        fontWeight: '600',
+        marginBottom: 8,
+        marginLeft: 2,
+        fontWeight: '700',
+        letterSpacing: 1,
+        fontSize: 11,
     },
     inputContainer: {
         borderWidth: 1.5,
+        minHeight: 56,
+        justifyContent: 'center',
     },
     input: {
         paddingHorizontal: 16,
-        paddingVertical: 12,
         fontSize: 16,
-        height: 54,
+        fontWeight: '500',
     },
-    error: {
-        marginTop: 4,
+    errorText: {
+        marginTop: 6,
         marginLeft: 4,
+        fontWeight: '600',
     },
 });

@@ -1,4 +1,4 @@
-import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { registerApi } from '../../api/authApi';
@@ -11,6 +11,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Header } from '../../components/ui/Header';
 import { useTheme } from '../../hooks/useTheme';
+import { Card } from '../../components/ui/Card';
 
 export default function RegisterScreen() {
   const dispatch = useDispatch();
@@ -52,13 +53,16 @@ export default function RegisterScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={[styles.contentContainer, { paddingBottom: theme.spacing.xxl }]} showsVerticalScrollIndicator={false}>
-          <View style={[styles.header, { marginBottom: theme.spacing.xl }]}>
-            <Typography variant="h1" align="center" style={[styles.title, { marginBottom: theme.spacing.sm }]} color={colors.primary}>
-              Create Account
+        <ScrollView
+          contentContainerStyle={[styles.contentContainer, { paddingBottom: theme.spacing.xxl }]}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.brandingContainer}>
+            <Typography variant="h1" align="center" style={styles.title} color={colors.textPrimary}>
+              Create <Typography variant="h1" color={colors.primary}>Account</Typography>
             </Typography>
-            <Typography variant="body" color={colors.textSecondary} align="center">
-              Join to report and manage incidents
+            <Typography variant="body" color={colors.textSecondary} align="center" style={styles.subtitle}>
+              Join the team to report and resolve incidents quickly
             </Typography>
           </View>
 
@@ -88,44 +92,56 @@ export default function RegisterScreen() {
               onChangeText={setPassword}
             />
 
-            <View style={[styles.roleContainer, { marginBottom: theme.spacing.md }]}>
-              <Typography variant="caption" color={colors.textSecondary} style={[styles.roleLabel, { marginBottom: theme.spacing.sm, marginLeft: theme.spacing.xs }]}>
-                Select Role
+            <View style={styles.roleSection}>
+              <Typography variant="caption" color={colors.textSecondary} style={styles.roleLabel}>
+                SELECT YOUR ROLE
               </Typography>
-              <View style={[styles.roleButtons, { gap: theme.spacing.xs }]}>
-                {(['REPORTER', 'ENGINEER', 'MANAGER'] as const).map((r) => (
-                  <Button
-                    key={r}
-                    title={r}
-                    variant={role === r ? 'primary' : 'secondary'}
-                    onPress={() => setRole(r)}
-                    style={[styles.roleButton, role !== r ? { opacity: 0.7 } : undefined] as any}
-                  />
-                ))}
-              </View>
+              <Card variant="glass" padding="none" style={styles.roleCard as any}>
+                <View style={styles.roleButtons}>
+                  {(['REPORTER', 'ENGINEER', 'MANAGER'] as const).map((r) => (
+                    <Button
+                      key={r}
+                      title={r}
+                      variant={role === r ? 'primary' : 'ghost'}
+                      onPress={() => setRole(r)}
+                      style={styles.roleButton}
+                      fullWidth={false}
+                    />
+                  ))}
+                </View>
+              </Card>
             </View>
 
             {error ? (
-              <Typography style={[styles.error, { marginBottom: theme.spacing.md }]} color={colors.error}>
-                {error}
-              </Typography>
+              <View style={[styles.errorContainer, { backgroundColor: colors.error + '10' }]}>
+                <Typography variant="caption" color={colors.error} align="center">
+                  {error}
+                </Typography>
+              </View>
             ) : null}
 
-            <View style={[styles.spacer, { height: theme.spacing.md }]} />
+            <View style={{ height: theme.spacing.lg }} />
 
             <Button
-              title="Sign Up"
+              title="Verify & Create Account"
               onPress={handleRegister}
               loading={loading}
               variant="primary"
             />
 
-            <Button
-              title="Already have an account? Sign In"
-              onPress={() => navigation.navigate('Login')}
-              variant="ghost"
-              style={[styles.secondaryButton, { marginTop: theme.spacing.sm }] as any}
-            />
+            <View style={styles.footer}>
+              <Typography variant="caption" color={colors.textSecondary}>
+                Already have an account?{' '}
+                <Typography
+                  variant="caption"
+                  color={colors.primary}
+                  style={{ fontWeight: '700' }}
+                  onPress={() => navigation.navigate('Login')}
+                >
+                  Sign In
+                </Typography>
+              </Typography>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -135,35 +151,56 @@ export default function RegisterScreen() {
 
 const styles = StyleSheet.create({
   contentContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 24,
   },
-  header: {
+  brandingContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
   },
   title: {
+    fontSize: 28,
+    marginBottom: 8,
+  },
+  subtitle: {
+    opacity: 0.7,
+    maxWidth: '85%',
   },
   form: {
     width: '100%',
   },
-  error: {
-    textAlign: 'center',
-  },
-  spacer: {
-  },
-  secondaryButton: {
-  },
-  roleContainer: {
+  roleSection: {
+    marginBottom: 24,
   },
   roleLabel: {
-    fontWeight: '600',
+    marginBottom: 12,
+    marginLeft: 2,
+    fontWeight: '700',
+    letterSpacing: 1,
+    fontSize: 11,
+  },
+  roleCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   roleButtons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: 'transparent',
+    padding: 4,
   },
   roleButton: {
     flex: 1,
-    height: 40,
-    paddingHorizontal: 0,
+    height: 44,
+    borderRadius: 12,
+  },
+  errorContainer: {
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  footer: {
+    marginTop: 24,
+    marginBottom: 40,
+    alignItems: 'center',
   },
 });

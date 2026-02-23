@@ -1,13 +1,13 @@
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useState } from 'react';
+import { View, StyleSheet, ScrollView, Alert, Animated } from 'react-native';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
-
 import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { Header } from '../../components/ui/Header';
+import { Card } from '../../components/ui/Card';
 import { useTheme } from '../../hooks/useTheme';
-
 import { createIncidentApi } from '../../api/incidentApi';
 
 export default function CreateIncident() {
@@ -16,33 +16,40 @@ export default function CreateIncident() {
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [priority, setPriority] =
-    useState<'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'>('MEDIUM');
-
+  const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'>('MEDIUM');
   const [loading, setLoading] = useState(false);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      })
+    ]).start();
+  }, []);
 
   const handleSubmit = async () => {
     if (!title.trim() || !description.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert('Incomplete Report', 'Please provide both a title and details for the briefing.');
       return;
     }
 
     setLoading(true);
-
     try {
-      await createIncidentApi({
-        title,
-        description,
-        priority,
-      });
-
-      Alert.alert('Success', 'Incident reported successfully');
+      await createIncidentApi({ title, description, priority });
+      Alert.alert('Transmission Successful', 'The incident report has been dispatched to the fleet.');
       navigation.goBack();
     } catch (error: any) {
-      Alert.alert(
-        'Error',
-        error.response?.data?.message || 'Failed to report incident'
-      );
+      Alert.alert('Transmission Failure', error.response?.data?.message || 'Failed to dispatch incident report');
     } finally {
       setLoading(false);
     }
@@ -50,93 +57,111 @@ export default function CreateIncident() {
 
   return (
     <Layout>
-      <ScrollView contentContainerStyle={[styles.content, { paddingVertical: theme.spacing.lg }]}>
-        <View style={[styles.header, { marginBottom: theme.spacing.xl }]}>
-          <Typography variant="h2" color={colors.textPrimary}>Report Incident</Typography>
-          <Typography variant="body" color={colors.textSecondary}>
-            Describe the issue in detail
-          </Typography>
-        </View>
-
-        <View style={[styles.form, { backgroundColor: colors.surface, padding: theme.spacing.lg, borderRadius: theme.borderRadius.lg }]}>
-          <Input
-            label="Title"
-            placeholder="e.g. Server Down"
-            value={title}
-            onChangeText={setTitle}
-          />
-
-          <Input
-            label="Description"
-            placeholder="Describe what happened..."
-            multiline
-            numberOfLines={4}
-            value={description}
-            onChangeText={setDescription}
-            style={styles.textArea}
-            textAlignVertical="top"
-          />
-
-          <View style={[styles.prioritySection, { marginBottom: theme.spacing.lg }]}>
-            <Typography variant="caption" color={colors.textSecondary} style={[styles.label, { marginBottom: theme.spacing.sm, marginLeft: theme.spacing.xs }]}>
-              Priority
+      <Header title="New Report" showBack />
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: theme.spacing.xxl }]}
+        showsVerticalScrollIndicator={false}
+      >
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+          <View style={styles.introHeader}>
+            <Typography variant="h2" style={styles.mainTitle}>Incident Briefing</Typography>
+            <Typography variant="body" color={colors.textSecondary} style={styles.subtitle}>
+              SUBMIT DETAILED INTELLIGENCE FOR RAPID RESOLUTION
             </Typography>
+          </View>
 
-            <View style={[styles.priorityGrid, { gap: theme.spacing.sm }]}>
-              {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const).map(
-                (p) => (
+          <Card variant="glass" padding="lg" style={styles.formCard as any}>
+            <Input
+              label="Briefing Title"
+              placeholder="e.g., Core API Latency Spike"
+              value={title}
+              onChangeText={setTitle}
+            />
+
+            <Input
+              label="Detailed Intelligence"
+              placeholder="Provide full context of the anomaly..."
+              multiline
+              numberOfLines={4}
+              value={description}
+              onChangeText={setDescription}
+              style={styles.textArea}
+            />
+
+            <View style={styles.prioritySection}>
+              <Typography variant="caption" color={colors.textDisabled} style={styles.priorityLabel}>
+                SEVERITY LEVEL
+              </Typography>
+              <View style={styles.priorityGrid}>
+                {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const).map((p) => (
                   <Button
                     key={p}
                     title={p}
-                    variant={
-                      priority === p
-                        ? p === 'CRITICAL'
-                          ? 'danger'
-                          : 'primary'
-                        : 'secondary'
-                    }
+                    variant={priority === p ? (p === 'CRITICAL' ? 'danger' : 'primary') : 'secondary'}
                     onPress={() => setPriority(p)}
                     style={styles.priorityBtn}
+                    fullWidth={false}
                   />
-                )
-              )}
+                ))}
+              </View>
             </View>
-          </View>
 
-          <Button
-            title="Submit Report"
-            onPress={handleSubmit}
-            loading={loading}
-            style={[styles.submitBtn, { marginTop: theme.spacing.md }] as any}
-          />
-        </View>
+            <View style={{ height: theme.spacing.lg }} />
+
+            <Button
+              title="Dispatch Report"
+              onPress={handleSubmit}
+              loading={loading}
+              variant="primary"
+            />
+          </Card>
+        </Animated.View>
       </ScrollView>
     </Layout>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
   },
-  header: {
+  introHeader: {
+    marginBottom: 24,
   },
-  form: {
+  mainTitle: {
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  subtitle: {
+    letterSpacing: 1,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  formCard: {
+    borderRadius: 32,
   },
   textArea: {
-    minHeight: 100,
+    height: 120,
   },
   prioritySection: {
+    marginTop: 12,
   },
-  label: {
+  priorityLabel: {
+    letterSpacing: 1.5,
+    fontWeight: '800',
+    marginBottom: 12,
+    marginLeft: 4,
   },
   priorityGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 8,
   },
   priorityBtn: {
     flex: 1,
     minWidth: '45%',
-  },
-  submitBtn: {
+    height: 44,
+    borderRadius: 14,
   },
 });

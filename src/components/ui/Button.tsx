@@ -1,14 +1,15 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet, ActivityIndicator, ViewStyle } from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet, ActivityIndicator, ViewStyle, Animated, Pressable } from 'react-native';
 import { useTheme } from '../../hooks/useTheme';
 import { Typography } from './Typography';
 
 interface ButtonProps {
     title: string;
     onPress: () => void;
-    variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+    variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'success';
     disabled?: boolean;
     loading?: boolean;
+    fullWidth?: boolean;
     style?: ViewStyle;
 }
 
@@ -18,9 +19,11 @@ export const Button: React.FC<ButtonProps> = ({
     variant = 'primary',
     disabled = false,
     loading = false,
+    fullWidth = true,
     style
 }) => {
     const { theme, colors } = useTheme();
+    const scaleAnim = useRef(new Animated.Value(1)).current;
 
     const getBackgroundColor = () => {
         if (disabled) return colors.surfaceHighlight;
@@ -28,6 +31,7 @@ export const Button: React.FC<ButtonProps> = ({
             case 'primary': return colors.primary;
             case 'secondary': return colors.surfaceHighlight;
             case 'danger': return colors.error;
+            case 'success': return colors.success;
             case 'ghost': return 'transparent';
             default: return colors.primary;
         }
@@ -39,48 +43,75 @@ export const Button: React.FC<ButtonProps> = ({
             case 'primary': return colors.textInverse;
             case 'secondary': return colors.textPrimary;
             case 'danger': return colors.textInverse;
+            case 'success': return colors.textInverse;
             case 'ghost': return colors.primary;
             default: return colors.textInverse;
         }
     };
 
+    const handlePressIn = () => {
+        Animated.spring(scaleAnim, {
+            toValue: 0.97,
+            useNativeDriver: true,
+            tension: 40,
+            friction: 7,
+        }).start();
+    };
+
+    const handlePressOut = () => {
+        Animated.spring(scaleAnim, {
+            toValue: 1,
+            useNativeDriver: true,
+            tension: 40,
+            friction: 7,
+        }).start();
+    };
+
     return (
-        <TouchableOpacity
-            style={[
-                styles.container,
-                {
-                    backgroundColor: getBackgroundColor(),
-                    borderRadius: theme.borderRadius.xl,
-                    paddingHorizontal: theme.spacing.lg,
-                    ...theme.shadows.md
-                },
-                variant === 'ghost' && { borderWidth: 0, shadowOpacity: 0 },
-                style,
-            ]}
-            onPress={onPress}
-            disabled={disabled || loading}
-            activeOpacity={0.7}
-        >
-            {loading ? (
-                <ActivityIndicator color={getTextColor()} />
-            ) : (
-                <Typography
-                    variant="button"
-                    color={getTextColor()}
-                    style={{ textTransform: variant === 'ghost' ? 'none' : 'uppercase' }}
-                >
-                    {title}
-                </Typography>
-            )}
-        </TouchableOpacity>
+        <Animated.View style={[{ transform: [{ scale: scaleAnim }], width: fullWidth ? '100%' : 'auto' }]}>
+            <Pressable
+                style={({ pressed }) => [
+                    styles.container,
+                    {
+                        backgroundColor: getBackgroundColor(),
+                        borderRadius: theme.borderRadius.lg,
+                        paddingHorizontal: theme.spacing.xl,
+                        opacity: (disabled || loading) ? 0.6 : (pressed ? 0.9 : 1),
+                    },
+                    variant === 'primary' && theme.shadows.sm,
+                    variant === 'secondary' && { borderWidth: 1, borderColor: colors.border },
+                    style,
+                ]}
+                onPress={onPress}
+                onPressIn={handlePressIn}
+                onPressOut={handlePressOut}
+                disabled={disabled || loading}
+            >
+                {loading ? (
+                    <ActivityIndicator color={getTextColor()} />
+                ) : (
+                    <Typography
+                        variant="button"
+                        color={getTextColor()}
+                        style={styles.text}
+                    >
+                        {title}
+                    </Typography>
+                )}
+            </Pressable>
+        </Animated.View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        height: 56,
+        height: 52,
         justifyContent: 'center',
         alignItems: 'center',
         marginVertical: 4,
     },
+    text: {
+        letterSpacing: 1.25,
+        fontWeight: '700',
+    }
 });

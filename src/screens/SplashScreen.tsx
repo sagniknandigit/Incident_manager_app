@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Easing, Image } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { Typography } from '../components/ui/Typography';
@@ -9,10 +9,12 @@ export default function SplashScreen() {
     const { colors, theme } = useTheme();
     const isAuth = useSelector((state: RootState) => state.auth.isAuthenticated);
 
-    const fadeAnim = new Animated.Value(0);
-    const scaleAnim = new Animated.Value(0.8);
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const scaleAnim = useRef(new Animated.Value(0.8)).current;
+    const pulseAnim = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
+        // Entry animation
         Animated.parallel([
             Animated.timing(fadeAnim, {
                 toValue: 1,
@@ -26,22 +28,35 @@ export default function SplashScreen() {
             })
         ]).start();
 
-        const timer = setTimeout(() => {
-            // Logic handled by AppNavigator's state, but we can trigger a transition here
-            // if we weren't using the conditional stack approach.
-            // Since we ARE using a conditional stack, the navigator will swap children
-            // when the 'loading' state in AppNavigator changes.
-            // However, to make it feel like a real splash, we want to stay here a bit.
-        }, 2000);
-
-        return () => clearTimeout(timer);
+        // Continuous pulse animation
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(pulseAnim, {
+                    toValue: 1.05,
+                    duration: 1500,
+                    easing: Easing.inOut(Easing.ease),
+                    useNativeDriver: true,
+                }),
+                Animated.timing(pulseAnim, {
+                    toValue: 1,
+                    duration: 1500,
+                    easing: Easing.inOut(Easing.ease),
+                    useNativeDriver: true,
+                })
+            ])
+        ).start();
     }, []);
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <Animated.View style={[
                 styles.content,
-                { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
+                {
+                    opacity: fadeAnim,
+                    transform: [
+                        { scale: Animated.multiply(scaleAnim, pulseAnim) }
+                    ]
+                }
             ]}>
                 <View style={[styles.logoContainer, { backgroundColor: colors.surface, borderColor: colors.primary + '20' }]}>
                     <Image

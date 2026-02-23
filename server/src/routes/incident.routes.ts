@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createIncident, getAllIncidents, updateIncidentStatus, assignIncident, getAssignedIncidents, getMyIncidents } from '../controllers/incident.controller';
+import { createIncident, getAllIncidents, updateIncidentStatus, assignIncident, getAssignedIncidents, getMyIncidents,getIncidentStats } from '../controllers/incident.controller';
 import { protect } from '../middleware/auth.middleware';
 import { authorize } from '../middleware/role.middleware';
 
@@ -15,4 +15,5 @@ router.put('/:id/assign', protect, authorize('MANAGER'), assignIncident);
 router.get('/assigned',protect,authorize('ENGINEER'),getAssignedIncidents);
 router.put('/:id/status',protect,authorize('ENGINEER'),updateIncidentStatus);
 router.get('/my',protect,authorize('REPORTER'),getMyIncidents);
+router.get('/stats',protect,authorize('MANAGER'),getIncidentStats);
 export default router;
