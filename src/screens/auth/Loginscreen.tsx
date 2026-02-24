@@ -12,6 +12,8 @@ import { Button } from '../../components/ui/Button';
 import { Header } from '../../components/ui/Header';
 import { useTheme } from '../../hooks/useTheme';
 import { Card } from '../../components/ui/Card';
+import { requestNotificationsPermission } from '../../services/notificationService';  
+import apiClient from '../../api/apiClient';
 
 export default function LoginScreen() {
   const dispatch = useDispatch();
@@ -37,6 +39,13 @@ export default function LoginScreen() {
       const { token, user } = response.data;
       await AsyncStorage.setItem('token', token);
       dispatch(loginSuccess({ user, token }));
+
+      await AsyncStorage.setItem('token',token);
+
+      const fcmtoken=await requestNotificationsPermission();
+
+      await apiClient.post('/users/save-fcm-token',{fcmtoken,});
+
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {

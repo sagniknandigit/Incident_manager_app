@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "659650496293",
+    "project_id": "incident-manager-bacf1",
+    "storage_bucket": "incident-manager-bacf1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:659650496293:android:737be3acc96dcf97267ccc",
+        "android_client_info": {
+          "package_name": "com.incidentmanager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIk7HG1qvo0u1UtfApb-u6cV4IU14hNco"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
