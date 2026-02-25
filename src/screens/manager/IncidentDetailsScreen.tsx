@@ -1,5 +1,5 @@
-import { View, Alert, StyleSheet, ScrollView, Animated } from 'react-native';
-import { useEffect, useState, useRef } from 'react';
+import { View, Alert, ScrollView } from 'react-native';
+import { useEffect, useState } from 'react';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
@@ -10,6 +10,7 @@ import { IncidentStatusBadge } from '../../components/ui/IncidentStatusBadge';
 import { getEngineersApi } from '../../api/userApi';
 import { assignEngineerApi } from '../../api/incidentApi';
 import { useTheme } from '../../hooks/useTheme';
+import { VStack, HStack, Box, Center, Avatar, AvatarFallbackText } from '@gluestack-ui/themed';
 
 interface RouteParams {
     incident: any;
@@ -17,20 +18,14 @@ interface RouteParams {
 
 export default function IncidentDetailsScreen() {
     const route = useRoute<RouteProp<{ params: RouteParams }, 'params'>>();
-    const navigation = useNavigation();
+    const navigation = useNavigation<any>();
     const { incident } = route.params;
     const [engineers, setEngineers] = useState<any>([]);
     const [loading, setLoading] = useState(false);
-    const { colors, theme } = useTheme();
-    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const { colors } = useTheme();
 
     useEffect(() => {
         fetchEngineers();
-        Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 600,
-            useNativeDriver: true,
-        }).start();
     }, []);
 
     const fetchEngineers = async () => {
@@ -46,180 +41,82 @@ export default function IncidentDetailsScreen() {
         try {
             setLoading(true);
             await assignEngineerApi(incident.id, engineerId);
-            Alert.alert('Assignment Confirmed', 'The engineer has been successfully assigned to this core incident.');
+            Alert.alert('Success', 'Engineer assigned successfully');
             navigation.goBack();
         } catch (err) {
-            Alert.alert('Error', 'Failed to update incident assignment');
+            Alert.alert('Error', 'Failed to assign engineer');
         } finally {
             setLoading(false);
         }
     };
 
-    const StatusInfo = ({ label, value, color }: { label: string, value: string, color?: string }) => (
-        <View style={styles.statusInfoItem}>
-            <Typography variant="caption" color={colors.textDisabled} style={styles.infoLabel}>{label.toUpperCase()}</Typography>
-            <Typography variant="body" style={{ color: color || colors.textPrimary, fontWeight: '700' }}>{value}</Typography>
-        </View>
-    );
-
     return (
         <Layout>
-            <Header title="Mission Briefing" showBack />
+            <Header title="Incident Details" showBack />
             <ScrollView
-                contentContainerStyle={[styles.scrollContent, { paddingBottom: theme.spacing.xxl }]}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 }}
                 showsVerticalScrollIndicator={false}
             >
-                <Animated.View style={{ opacity: fadeAnim }}>
-                    <Card variant="elevated" padding="lg" style={styles.mainCard as any}>
-                        <View style={styles.cardHeader}>
-                            <IncidentStatusBadge status={incident.status} />
-                            <Typography variant="caption" color={colors.textDisabled}>
-                                {new Date(incident.createdAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+                <Card variant="elevated" padding="lg" style={{ marginBottom: 24, borderRadius: 20 }}>
+                    <HStack sx={{ justifyContent: 'space-between', alignItems: 'center', mb: '$4' }}>
+                        <IncidentStatusBadge status={incident.status} />
+                        <Typography variant="caption" color={colors.textDisabled}>
+                            {new Date(incident.createdAt).toLocaleDateString()}
+                        </Typography>
+                    </HStack>
+
+                    <Typography variant="h2" style={{ marginBottom: 8 }}>{incident.title}</Typography>
+                    <Typography variant="body" color={colors.textSecondary} style={{ marginBottom: 20 }}>
+                        {incident.description}
+                    </Typography>
+
+                    <Box sx={{ h: 1, bg: colors.border, mb: '$4', opacity: 0.5 }} />
+
+                    <HStack sx={{ justifyContent: 'space-between' }}>
+                        <VStack>
+                            <Typography variant="caption" color={colors.textDisabled}>PRIORITY</Typography>
+                            <Typography variant="body" style={{ color: incident.priority === 'CRITICAL' ? colors.error : colors.primary, fontWeight: '700' }}>
+                                {incident.priority}
                             </Typography>
-                        </View>
+                        </VStack>
+                        <VStack sx={{ alignItems: 'flex-end' }}>
+                            <Typography variant="caption" color={colors.textDisabled}>REPORTER</Typography>
+                            <Typography variant="body" style={{ fontWeight: '700' }}>
+                                {incident.reporter?.name || 'User'}
+                            </Typography>
+                        </VStack>
+                    </HStack>
+                </Card>
 
-                        <Typography variant="h2" style={styles.title}>{incident.title}</Typography>
-                        <Typography variant="body" color={colors.textSecondary} style={styles.description}>
-                            {incident.description}
-                        </Typography>
+                <Typography variant="subtitle" style={{ fontWeight: '700', marginBottom: 12, paddingLeft: 4 }}>
+                    Assign Engineer
+                </Typography>
 
-                        <View style={[styles.infoGrid, { backgroundColor: colors.surfaceHighlight, borderRadius: 16 }]}>
-                            <StatusInfo
-                                label="Priority Level"
-                                value={incident.priority}
-                                color={incident.priority === 'CRITICAL' ? colors.error : colors.primary}
-                            />
-                            <View style={[styles.verticalDivider, { backgroundColor: colors.border }]} />
-                            <StatusInfo
-                                label="Original Reporter"
-                                value={incident.reporter?.name || 'Authorized User'}
-                            />
-                        </View>
-                    </Card>
-
-                    <View style={styles.actionHeader}>
-                        <Typography variant="h3" style={{ fontWeight: '800' }}>Dispatch Engineer</Typography>
-                        <Typography variant="caption" color={colors.textSecondary} style={styles.subtitle}>
-                            SELECT A CERTIFIED SPECIALIST FOR RESOLUTION
-                        </Typography>
-                    </View>
-
-                    <View style={styles.engineerList}>
-                        {engineers.map((engineer: any) => (
-                            <Card
-                                key={engineer.id}
-                                variant="glass"
-                                padding="md"
-                                style={styles.engineerCard as any}
-                            >
-                                <View style={styles.engineerMain}>
-                                    <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-                                        <Typography variant="h3" color={colors.textInverse}>{engineer.name.charAt(0)}</Typography>
-                                    </View>
-                                    <View style={styles.engineerText}>
-                                        <Typography variant="body" style={{ fontWeight: '700' }}>{engineer.name}</Typography>
-                                        <Typography variant="caption" color={colors.textDisabled}>{engineer.email}</Typography>
-                                    </View>
-                                </View>
+                <VStack sx={{ gap: '$3' }}>
+                    {engineers.map((engineer: any) => (
+                        <Card key={engineer.id} variant="elevated" padding="md" style={{ borderRadius: 16 }}>
+                            <HStack sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+                                <HStack sx={{ alignItems: 'center', gap: '$3', flex: 1 }}>
+                                    <Avatar size="sm" borderRadius="$full" bg={colors.primary}>
+                                        <AvatarFallbackText>{engineer.name}</AvatarFallbackText>
+                                    </Avatar>
+                                    <VStack>
+                                        <Typography variant="body" style={{ fontWeight: '600' }}>{engineer.name}</Typography>
+                                        <Typography variant="caption" color={colors.textSecondary}>{engineer.email}</Typography>
+                                    </VStack>
+                                </HStack>
                                 <Button
-                                    title="Dispatch"
+                                    title="Assign"
                                     onPress={() => handleAssign(engineer.id)}
-                                    variant="primary"
                                     loading={loading}
-                                    style={styles.dispatchBtn}
+                                    style={{ height: 36, minWidth: 80 }}
                                     fullWidth={false}
                                 />
-                            </Card>
-                        ))}
-                    </View>
-                </Animated.View>
+                            </HStack>
+                        </Card>
+                    ))}
+                </VStack>
             </ScrollView>
         </Layout>
     );
 }
-
-const styles = StyleSheet.create({
-    scrollContent: {
-        paddingHorizontal: 20,
-        paddingTop: 16,
-    },
-    mainCard: {
-        marginBottom: 32,
-        borderRadius: 24,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 24,
-        marginBottom: 12,
-        fontWeight: '800',
-    },
-    description: {
-        lineHeight: 24,
-        marginBottom: 24,
-        opacity: 0.8,
-    },
-    infoGrid: {
-        flexDirection: 'row',
-        padding: 16,
-        alignItems: 'center',
-    },
-    statusInfoItem: {
-        flex: 1,
-        alignItems: 'center',
-    },
-    infoLabel: {
-        fontSize: 10,
-        letterSpacing: 1,
-        marginBottom: 4,
-        fontWeight: '700',
-    },
-    verticalDivider: {
-        width: 1,
-        height: 30,
-        opacity: 0.3,
-    },
-    actionHeader: {
-        marginBottom: 20,
-        paddingLeft: 4,
-    },
-    subtitle: {
-        letterSpacing: 1.5,
-        marginTop: 4,
-        fontWeight: '700',
-    },
-    engineerList: {
-        gap: 12,
-    },
-    engineerCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderRadius: 20,
-    },
-    engineerMain: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
-    },
-    avatar: {
-        width: 44,
-        height: 44,
-        borderRadius: 14,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 12,
-    },
-    engineerText: {
-        flex: 1,
-    },
-    dispatchBtn: {
-        height: 38,
-        minWidth: 90,
-        borderRadius: 12,
-    },
-});

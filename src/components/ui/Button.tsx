@@ -1,7 +1,11 @@
 import React, { useRef } from 'react';
-import { StyleSheet, ActivityIndicator, ViewStyle, Animated, Pressable } from 'react-native';
+import { Animated, ViewStyle } from 'react-native';
+import {
+    Button as GSButton,
+    ButtonText,
+    ButtonSpinner,
+} from '@gluestack-ui/themed';
 import { useTheme } from '../../hooks/useTheme';
-import { Typography } from './Typography';
 
 interface ButtonProps {
     title: string;
@@ -10,7 +14,7 @@ interface ButtonProps {
     disabled?: boolean;
     loading?: boolean;
     fullWidth?: boolean;
-    style?: ViewStyle;
+    style?: any;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -22,32 +26,18 @@ export const Button: React.FC<ButtonProps> = ({
     fullWidth = true,
     style
 }) => {
-    const { theme, colors } = useTheme();
+    const { colors, theme } = useTheme();
     const scaleAnim = useRef(new Animated.Value(1)).current;
 
-    const getBackgroundColor = () => {
-        if (disabled) return colors.surfaceHighlight;
-        switch (variant) {
-            case 'primary': return colors.primary;
-            case 'secondary': return colors.surfaceHighlight;
-            case 'danger': return colors.error;
-            case 'success': return colors.success;
-            case 'ghost': return 'transparent';
-            default: return colors.primary;
-        }
+    const actionMap: Record<string, "primary" | "secondary" | "positive" | "negative" | "default"> = {
+        primary: 'primary',
+        secondary: 'secondary',
+        success: 'positive',
+        danger: 'negative',
+        ghost: 'default',
     };
 
-    const getTextColor = () => {
-        if (disabled) return colors.textDisabled;
-        switch (variant) {
-            case 'primary': return colors.textInverse;
-            case 'secondary': return colors.textPrimary;
-            case 'danger': return colors.textInverse;
-            case 'success': return colors.textInverse;
-            case 'ghost': return colors.primary;
-            default: return colors.textInverse;
-        }
-    };
+    const gsVariant: "solid" | "outline" | "link" = (variant === 'secondary') ? 'outline' : (variant === 'ghost' ? 'link' : 'solid');
 
     const handlePressIn = () => {
         Animated.spring(scaleAnim, {
@@ -69,49 +59,33 @@ export const Button: React.FC<ButtonProps> = ({
 
     return (
         <Animated.View style={[{ transform: [{ scale: scaleAnim }], width: fullWidth ? '100%' : 'auto' }]}>
-            <Pressable
-                style={({ pressed }) => [
-                    styles.container,
-                    {
-                        backgroundColor: getBackgroundColor(),
-                        borderRadius: theme.borderRadius.lg,
-                        paddingHorizontal: theme.spacing.xl,
-                        opacity: (disabled || loading) ? 0.6 : (pressed ? 0.9 : 1),
-                    },
-                    variant === 'primary' && theme.shadows.sm,
-                    variant === 'secondary' && { borderWidth: 1, borderColor: colors.border },
-                    style,
-                ]}
+            <GSButton
+                size={"lg" as any}
+                variant={gsVariant}
+                action={actionMap[variant]}
+                isDisabled={disabled || loading}
                 onPress={onPress}
                 onPressIn={handlePressIn}
                 onPressOut={handlePressOut}
-                disabled={disabled || loading}
+                sx={{
+                    borderRadius: theme.borderRadius.lg,
+                    height: 52,
+                    marginVertical: 4,
+                    width: '100%',
+                    ...style,
+                    ':active': {
+                        opacity: 0.8,
+                    },
+                }}
             >
                 {loading ? (
-                    <ActivityIndicator color={getTextColor()} />
+                    <ButtonSpinner color={colors.textInverse} />
                 ) : (
-                    <Typography
-                        variant="button"
-                        color={getTextColor()}
-                        style={styles.text}
-                    >
+                    <ButtonText fontWeight="$bold" style={{ letterSpacing: 1.25 }}>
                         {title}
-                    </Typography>
+                    </ButtonText>
                 )}
-            </Pressable>
+            </GSButton>
         </Animated.View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        height: 52,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginVertical: 4,
-    },
-    text: {
-        letterSpacing: 1.25,
-        fontWeight: '700',
-    }
-});

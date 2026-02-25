@@ -1,101 +1,95 @@
 import React from 'react';
-import { TextInput, StyleSheet, View, TextInputProps } from 'react-native';
+import {
+    Input as GSInput,
+    InputField,
+    FormControl,
+    FormControlLabel,
+    FormControlLabelText,
+    FormControlError,
+    FormControlErrorText,
+} from '@gluestack-ui/themed';
 import { useTheme } from '../../hooks/useTheme';
-import { Typography } from './Typography';
-import { useState } from 'react';
 
-interface InputProps extends TextInputProps {
+interface InputProps {
     label?: string;
     error?: string;
+    placeholder?: string;
+    value?: string;
+    onChangeText?: (text: string) => void;
+    secureTextEntry?: boolean;
+    multiline?: boolean;
+    numberOfLines?: number;
+    style?: any;
+    [key: string]: any;
 }
 
 export const Input: React.FC<InputProps> = ({
     label,
     error,
+    placeholder,
+    value,
+    onChangeText,
+    secureTextEntry,
+    multiline,
+    numberOfLines,
     style,
     ...props
 }) => {
-    const [isFocused, setIsFocused] = useState(false);
     const { colors, theme } = useTheme();
 
     return (
-        <View style={styles.container}>
+        <FormControl isInvalid={!!error} style={{ marginBottom: 20 }}>
             {label && (
-                <Typography
-                    variant="caption"
-                    color={isFocused ? colors.primary : colors.textSecondary}
-                    style={styles.label}
-                >
-                    {label.toUpperCase()}
-                </Typography>
+                <FormControlLabel mb="$1">
+                    <FormControlLabelText
+                        fontSize="$xs"
+                        fontWeight="$bold"
+                        color={colors.textSecondary}
+                        style={{ letterSpacing: 1 }}
+                    >
+                        {label.toUpperCase()}
+                    </FormControlLabelText>
+                </FormControlLabel>
             )}
-            <View style={[
-                styles.inputContainer,
-                {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
+            <GSInput
+                variant="outline"
+                size="lg"
+                isDisabled={props.disabled}
+                isReadOnly={props.readOnly}
+                sx={{
                     borderRadius: theme.borderRadius.md,
-                },
-                isFocused && {
-                    borderColor: colors.primary,
-                    backgroundColor: colors.surfaceHighlight,
-                    borderWidth: 2,
-                },
-                !!error && { borderColor: colors.error, borderWidth: 2 }
-            ]}>
-                <TextInput
-                    style={[
-                        styles.input,
-                        {
-                            color: colors.textPrimary,
-                            paddingTop: isFocused || props.value ? 10 : 0,
-                        },
-                        style
-                    ]}
+                    minHeight: multiline ? 100 : 56,
+                    borderColor: colors.border,
+                    ':focus': {
+                        borderColor: colors.primary,
+                        borderWidth: 2,
+                    },
+                    ...style,
+                }}
+            >
+                <InputField
+                    placeholder={placeholder}
+                    value={value}
+                    onChangeText={onChangeText}
+                    secureTextEntry={secureTextEntry}
+                    multiline={multiline}
+                    numberOfLines={numberOfLines}
                     placeholderTextColor={colors.placeholder}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    selectionColor={colors.primary}
+                    color={colors.textPrimary}
+                    sx={{
+                        paddingHorizontal: 16,
+                        textAlignVertical: multiline ? 'top' : 'center',
+                    }}
                     {...props}
                 />
-            </View>
+            </GSInput>
             {error && (
-                <Typography
-                    variant="caption"
-                    color={colors.error}
-                    style={styles.errorText}
-                >
-                    {error}
-                </Typography>
+                <FormControlError mt="$1">
+                    <FormControlErrorText color={colors.error} fontWeight="$semibold">
+                        {error}
+                    </FormControlErrorText>
+                </FormControlError>
             )}
-        </View>
+        </FormControl>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        marginBottom: 20,
-    },
-    label: {
-        marginBottom: 8,
-        marginLeft: 2,
-        fontWeight: '700',
-        letterSpacing: 1,
-        fontSize: 11,
-    },
-    inputContainer: {
-        borderWidth: 1.5,
-        minHeight: 56,
-        justifyContent: 'center',
-    },
-    input: {
-        paddingHorizontal: 16,
-        fontSize: 16,
-        fontWeight: '500',
-    },
-    errorText: {
-        marginTop: 6,
-        marginLeft: 4,
-        fontWeight: '600',
-    },
-});

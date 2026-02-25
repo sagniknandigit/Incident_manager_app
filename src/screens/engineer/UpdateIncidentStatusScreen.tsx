@@ -1,4 +1,4 @@
-import { View, Alert, StyleSheet, TouchableOpacity } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
@@ -8,13 +8,14 @@ import { IncidentStatusBadge, IncidentStatus } from '../../components/ui/Inciden
 import { updateIncidentStatusApi } from '../../api/incidentApi';
 import { useState } from 'react';
 import { useTheme } from '../../hooks/useTheme';
+import { VStack, Box, Pressable, HStack } from '@gluestack-ui/themed';
 
 export default function UpdateIncidentStatusScreen() {
     const route = useRoute<any>();
     const navigation = useNavigation<any>();
     const { incidentId } = route.params;
     const [loading, setLoading] = useState(false);
-    const { colors, theme } = useTheme();
+    const { colors } = useTheme();
 
     const updateStatus = async (status: string) => {
         try {
@@ -30,71 +31,65 @@ export default function UpdateIncidentStatusScreen() {
     };
 
     const StatusTile = ({ status, label, description }: { status: IncidentStatus, label: string, description: string }) => (
-        <TouchableOpacity
-            activeOpacity={0.7}
+        <Pressable
             onPress={() => updateStatus(status)}
             disabled={loading}
+            style={({ pressed }) => ({
+                opacity: pressed ? 0.7 : 1,
+                transform: [{ scale: pressed ? 0.98 : 1 }]
+            })}
         >
-            <Card style={[styles.tile, { paddingVertical: theme.spacing.md }] as any}>
-                <View style={styles.tileHeader}>
+            <Card variant="glass" padding="md" style={{ borderRadius: 20 }}>
+                <HStack sx={{ alignItems: 'center', justifyContent: 'space-between', mb: '$2' }}>
                     <IncidentStatusBadge status={status} />
                     <Typography variant="body" style={{ fontWeight: '700', color: colors.textPrimary }}>{label}</Typography>
-                </View>
+                </HStack>
                 <Typography variant="caption" color={colors.textSecondary}>{description}</Typography>
             </Card>
-        </TouchableOpacity>
+        </Pressable>
     );
 
     return (
         <Layout>
             <Header title="Update Status" showBack />
-            <View style={styles.container}>
-                <View style={[styles.headerSection, { marginBottom: theme.spacing.xl, backgroundColor: colors.surface, padding: theme.spacing.md, borderRadius: theme.borderRadius.md, borderColor: colors.border }]}>
-                    <Typography variant="caption" color={colors.textSecondary}>INCIDENT ID</Typography>
+            <VStack sx={{ flex: 1, p: '$5', gap: '$6' }}>
+                <Box
+                    sx={{
+                        p: '$4',
+                        borderRadius: '$lg',
+                        bg: colors.surface,
+                        borderWidth: 1,
+                        borderColor: colors.border
+                    }}
+                >
+                    <Typography variant="caption" color={colors.textSecondary} style={{ fontWeight: '700', letterSpacing: 1 }}>INCIDENT ID</Typography>
                     <Typography variant="h2" color={colors.textPrimary}>#{incidentId}</Typography>
-                </View>
+                </Box>
 
-                <Typography variant="subtitle" style={[styles.sectionTitle, { marginBottom: theme.spacing.md, paddingLeft: theme.spacing.xs }]}>Select New Status</Typography>
+                <VStack sx={{ gap: '$3' }}>
+                    <Typography variant="subtitle" style={{ fontWeight: '700', paddingLeft: 4 }}>
+                        Select New Status
+                    </Typography>
 
-                <View style={[styles.tilesContainer, { gap: theme.spacing.md }]}>
-                    <StatusTile
-                        status="IN_PROGRESS"
-                        label="In Progress"
-                        description="Acknowledge and start working on the incident."
-                    />
-                    <StatusTile
-                        status="RESOLVED"
-                        label="Resolved"
-                        description="Fix has been deployed or issue is no longer present."
-                    />
-                    <StatusTile
-                        status="CLOSED"
-                        label="Closed"
-                        description="Final confirmation that the incident is fully handled."
-                    />
-                </View>
-            </View>
+                    <VStack sx={{ gap: '$4' }}>
+                        <StatusTile
+                            status="IN_PROGRESS"
+                            label="In Progress"
+                            description="Acknowledge and start working on the incident."
+                        />
+                        <StatusTile
+                            status="RESOLVED"
+                            label="Resolved"
+                            description="Fix has been deployed or issue is no longer present."
+                        />
+                        <StatusTile
+                            status="CLOSED"
+                            label="Closed"
+                            description="Final confirmation that the incident is fully handled."
+                        />
+                    </VStack>
+                </VStack>
+            </VStack>
         </Layout>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    headerSection: {
-        borderWidth: 1,
-    },
-    sectionTitle: {
-    },
-    tilesContainer: {
-    },
-    tile: {
-    },
-    tileHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 8,
-    }
-});

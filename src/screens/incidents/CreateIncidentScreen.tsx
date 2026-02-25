@@ -1,22 +1,35 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Header } from '../../components/ui/Header';
-import { theme } from '../../theme/theme';
 import { createIncidentApi } from '../../api/incidentApi';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../hooks/useTheme';
+import { VStack, HStack, Box, Pressable } from '@gluestack-ui/themed';
+import { Card } from '../../components/ui/Card';
 
 export default function CreateIncidentScreen() {
     const navigation = useNavigation<any>();
+    const { colors } = useTheme();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'>('MEDIUM');
     const [loading, setLoading] = useState(false);
 
     const priorities: ('LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL')[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+
+    const getPriorityColor = (p: string) => {
+        switch (p) {
+            case 'CRITICAL': return colors.error;
+            case 'HIGH': return colors.warning;
+            case 'MEDIUM': return colors.primary;
+            case 'LOW': return colors.success;
+            default: return colors.primary;
+        }
+    };
 
     const handleSubmit = async () => {
         if (!title.trim() || !description.trim()) {
@@ -26,10 +39,10 @@ export default function CreateIncidentScreen() {
 
         setLoading(true);
         try {
-            await createIncidentApi(title, description, priority);
-            Alert.alert('Success', 'Incident reported successfully', [
-                { text: 'OK', onPress: () => navigation.goBack() }
-            ]);
+            // FIX: Pass data as an object
+            await createIncidentApi({ title, description, priority });
+            Alert.alert('Success', 'Incident reported successfully');
+            navigation.goBack();
         } catch (error) {
             Alert.alert('Error', 'Failed to report incident');
         } finally {
@@ -39,86 +52,82 @@ export default function CreateIncidentScreen() {
 
     return (
         <Layout>
-            <Header title="Report Incident" showBack />
+            <Header title="New Incident" showBack />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 style={{ flex: 1 }}
             >
-                <ScrollView contentContainerStyle={styles.content}>
-                    <View style={styles.formSection}>
-                        <Input
-                            label="Incident Title"
-                            placeholder="e.g., Server Outage in Region East"
-                            value={title}
-                            onChangeText={setTitle}
-                        />
+                <ScrollView
+                    contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
+                    showsVerticalScrollIndicator={false}
+                >
+                    <VStack sx={{ gap: '$6', mt: '$4' }}>
+                        <Card variant="elevated" padding="lg" style={{ borderRadius: 20 }}>
+                            <VStack sx={{ gap: '$4' }}>
+                                <Input
+                                    label="Title"
+                                    placeholder="Brief summary of the issue"
+                                    value={title}
+                                    onChangeText={setTitle}
+                                />
 
-                        <Input
-                            label="Description"
-                            placeholder="Describe the issue in detail..."
-                            value={description}
-                            onChangeText={setDescription}
-                            multiline
-                            numberOfLines={4}
-                            style={{ height: 120, textAlignVertical: 'top' }}
-                        />
+                                <Input
+                                    label="Description"
+                                    placeholder="Provide more details..."
+                                    value={description}
+                                    onChangeText={setDescription}
+                                    multiline
+                                    style={{ height: 100, textAlignVertical: 'top' }}
+                                />
 
-                        <View style={styles.prioritySection}>
-                            <Typography variant="caption" color={theme.colors.textSecondary} style={styles.label}>
-                                Priority Level
-                            </Typography>
-                            <View style={styles.priorityGrid}>
-                                {priorities.map((p) => (
-                                    <Button
-                                        key={p}
-                                        title={p}
-                                        onPress={() => setPriority(p)}
-                                        variant={priority === p ? (p === 'CRITICAL' ? 'danger' : 'primary') : 'secondary'}
-                                        style={styles.priorityBtn}
-                                    />
-                                ))}
-                            </View>
-                        </View>
-                    </View>
+                                <VStack sx={{ gap: '$2' }}>
+                                    <Typography variant="caption" color={colors.textSecondary} style={{ fontWeight: '700' }}>
+                                        PRIORITY
+                                    </Typography>
+                                    <HStack sx={{ flexWrap: 'wrap', gap: '$2' }}>
+                                        {priorities.map((p) => {
+                                            const isSelected = priority === p;
+                                            const pColor = getPriorityColor(p);
+                                            return (
+                                                <Pressable
+                                                    key={p}
+                                                    onPress={() => setPriority(p)}
+                                                    sx={{ flex: 1, minWidth: '45%' }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            p: '$2',
+                                                            borderRadius: '$md',
+                                                            borderWidth: 1,
+                                                            borderColor: isSelected ? pColor : colors.border,
+                                                            bg: isSelected ? pColor + '10' : 'transparent',
+                                                            alignItems: 'center'
+                                                        }}
+                                                    >
+                                                        <Typography
+                                                            variant="caption"
+                                                            style={{ fontWeight: isSelected ? '700' : '400', color: isSelected ? pColor : colors.textPrimary }}
+                                                        >
+                                                            {p}
+                                                        </Typography>
+                                                    </Box>
+                                                </Pressable>
+                                            );
+                                        })}
+                                    </HStack>
+                                </VStack>
 
-                    <Button
-                        title="Submit Report"
-                        onPress={handleSubmit}
-                        loading={loading}
-                        style={styles.submitBtn}
-                    />
+                                <Button
+                                    title="Submit Report"
+                                    onPress={handleSubmit}
+                                    loading={loading}
+                                    style={{ marginTop: 12 }}
+                                />
+                            </VStack>
+                        </Card>
+                    </VStack>
                 </ScrollView>
             </KeyboardAvoidingView>
         </Layout>
     );
 }
-
-const styles = StyleSheet.create({
-    content: {
-        paddingBottom: theme.spacing.xxl,
-    },
-    formSection: {
-        marginBottom: theme.spacing.xl,
-    },
-    label: {
-        marginBottom: theme.spacing.sm,
-        marginLeft: theme.spacing.xs,
-        fontWeight: '600',
-    },
-    prioritySection: {
-        marginTop: theme.spacing.sm,
-    },
-    priorityGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: theme.spacing.xs,
-    },
-    priorityBtn: {
-        flexGrow: 1,
-        minWidth: '45%',
-        height: 44,
-    },
-    submitBtn: {
-        marginTop: theme.spacing.lg,
-    },
-});

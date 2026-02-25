@@ -1,25 +1,21 @@
-import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
+import { VStack, Box, Center, HStack, Pressable } from '@gluestack-ui/themed';
 import { loginApi } from '../../api/authApi';
 import { loginSuccess } from '../../redux/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
 import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { Header } from '../../components/ui/Header';
-import { useTheme } from '../../hooks/useTheme';
 import { Card } from '../../components/ui/Card';
-import { requestNotificationsPermission } from '../../services/notificationService';  
-import apiClient from '../../api/apiClient';
+import { useTheme } from '../../hooks/useTheme';
 
-export default function LoginScreen() {
+const LoginScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation<any>();
-  const { colors, theme } = useTheme();
-
+  const { colors } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -31,23 +27,18 @@ export default function LoginScreen() {
       return;
     }
 
-    setError('');
     setLoading(true);
-
+    setError('');
     try {
       const response = await loginApi(email, password);
-      const { token, user } = response.data;
+      const { user, token } = response.data;
+
+      // CRITICAL FIX: Save token to storage for API headers
       await AsyncStorage.setItem('token', token);
+
       dispatch(loginSuccess({ user, token }));
-
-      await AsyncStorage.setItem('token',token);
-
-      const fcmtoken=await requestNotificationsPermission();
-
-      await apiClient.post('/users/save-fcm-token',{fcmtoken,});
-
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || 'Login Failed');
     } finally {
       setLoading(false);
     }
@@ -55,126 +46,68 @@ export default function LoginScreen() {
 
   return (
     <Layout>
-      <Header title="" showThemeToggle />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          contentContainerStyle={[styles.contentContainer, { paddingBottom: theme.spacing.xxl }]}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.brandingContainer}>
-            <Card variant="glass" padding="none" style={styles.logoWrapper as any}>
-              <Image
-                source={require('../../assets/images/logo.png')}
-                style={styles.logo}
+      <Center flex={1} px="$4">
+        <VStack w="100%" maxWidth={400} sx={{ gap: '$6' }}>
+          <Box alignItems="center">
+            <Typography variant="h1" align="center" style={{ fontSize: 40, marginBottom: 8 }}>🛡️</Typography>
+            <Typography variant="h1" align="center">Incident Manager</Typography>
+            <Typography variant="body" color={colors.textSecondary} align="center">
+              Sign in to continue
+            </Typography>
+          </Box>
+
+          <Card variant="elevated" padding="lg" style={{ borderRadius: 20 }}>
+            <VStack sx={{ gap: '$4' }}>
+              <Input
+                label="Email"
+                placeholder="name@company.com"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
               />
-            </Card>
-            <Typography variant="h1" align="center" style={styles.title} color={colors.textPrimary}>
-              Welcome <Typography variant="h1" color={colors.primary}>Back</Typography>
-            </Typography>
-            <Typography variant="body" color={colors.textSecondary} align="center" style={styles.subtitle}>
-              Secure access to the Incident Management portal
-            </Typography>
-          </View>
 
-          <View style={styles.form}>
-            <Input
-              label="Email Address"
-              placeholder="name@company.com"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
+              <Input
+                label="Password"
+                placeholder="••••••••"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
 
-            <Input
-              label="Password"
-              placeholder="••••••••"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
+              {error ? (
+                <Box sx={{ bg: colors.error + '15', p: '$3', borderRadius: '$md' }}>
+                  <Typography variant="caption" color={colors.error} align="center">
+                    {error}
+                  </Typography>
+                </Box>
+              ) : null}
 
-            {error ? (
-              <View style={[styles.errorContainer, { backgroundColor: colors.error + '10' }]}>
-                <Typography variant="caption" color={colors.error} align="center">
-                  {error}
-                </Typography>
-              </View>
-            ) : null}
+              <Button
+                title="Login"
+                onPress={handleLogin}
+                loading={loading}
+                style={{ marginTop: 8 }}
+              />
 
-            <View style={{ height: theme.spacing.lg }} />
-
-            <Button
-              title="Sign In"
-              onPress={handleLogin}
-              loading={loading}
-              variant="primary"
-            />
-
-            <View style={styles.footer}>
-              <Typography variant="caption" color={colors.textSecondary}>
-                Don't have an account?{' '}
-                <Typography
-                  variant="caption"
-                  color={colors.primary}
-                  style={{ fontWeight: '700' }}
-                  onPress={() => navigation.navigate('Register')}
-                >
-                  Create one
-                </Typography>
-              </Typography>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+              <Box sx={{ mt: '$2' }} alignItems="center">
+                <Pressable onPress={() => navigation.navigate('Register')}>
+                  <HStack sx={{ gap: '$2', alignItems: 'center' }}>
+                    <Typography variant="caption" color={colors.textSecondary}>
+                      Don't have an account?
+                    </Typography>
+                    <Typography variant="caption" color={colors.primary} style={{ fontWeight: '700' }}>
+                      Register
+                    </Typography>
+                  </HStack>
+                </Pressable>
+              </Box>
+            </VStack>
+          </Card>
+        </VStack>
+      </Center>
     </Layout>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  contentContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-  },
-  brandingContainer: {
-    alignItems: 'center',
-    marginBottom: 48,
-  },
-  logoWrapper: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  logo: {
-    width: '60%',
-    height: '60%',
-    resizeMode: 'contain',
-  },
-  title: {
-    fontSize: 28,
-    marginBottom: 8,
-  },
-  subtitle: {
-    opacity: 0.7,
-    maxWidth: '80%',
-  },
-  form: {
-    width: '100%',
-  },
-  errorContainer: {
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  footer: {
-    marginTop: 24,
-    alignItems: 'center',
-  },
-});
+export default LoginScreen;

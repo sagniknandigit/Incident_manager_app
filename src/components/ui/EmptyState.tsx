@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { Center, VStack, Box } from '@gluestack-ui/themed';
 import { Typography } from './Typography';
 import { Button } from './Button';
 import { useTheme } from '../../hooks/useTheme';
@@ -19,67 +19,48 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     actionLabel,
     onAction
 }) => {
-    const { colors, theme } = useTheme();
+    const { colors } = useTheme();
 
     return (
-        <View style={styles.container}>
-            <View style={[styles.iconWrapper, { backgroundColor: colors.surfaceHighlight }]}>
-                <Typography style={styles.icon}>{icon}</Typography>
-            </View>
-            <Typography variant="h2" align="center" style={styles.title}>
-                {title}
-            </Typography>
-            <Typography variant="body" color={colors.textSecondary} align="center" style={styles.description}>
-                {description}
-            </Typography>
-            {actionLabel && onAction && (
-                <View style={styles.actionContainer}>
-                    <Button
-                        title={actionLabel}
-                        onPress={onAction}
-                        variant="primary"
-                        fullWidth={false}
-                        style={styles.button}
-                    />
-                </View>
-            )}
-        </View>
+        <Center flex={1} px="$10" py="$16">
+            <VStack space="xl" alignItems="center" w="100%">
+                <Box
+                    w={100}
+                    h={100}
+                    borderRadius="$full"
+                    bg={colors.surfaceHighlight}
+                    alignItems="center"
+                    justifyContent="center"
+                >
+                    <Typography style={{ fontSize: 48 }}>{icon}</Typography>
+                </Box>
+
+                <VStack space="xs" alignItems="center">
+                    <Typography variant="h2" align="center">
+                        {title}
+                    </Typography>
+                    <Typography
+                        variant="body"
+                        color={colors.textSecondary}
+                        align="center"
+                        style={{ opacity: 0.7, lineHeight: 22 }}
+                    >
+                        {description}
+                    </Typography>
+                </VStack>
+
+                {actionLabel && onAction && (
+                    <Box mt="$8" w="100%" alignItems="center">
+                        <Button
+                            title={actionLabel}
+                            onPress={onAction}
+                            variant="primary"
+                            fullWidth={false}
+                            style={{ paddingHorizontal: 32, borderRadius: 16 }}
+                        />
+                    </Box>
+                )}
+            </VStack>
+        </Center>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 40,
-        paddingVertical: 60,
-    },
-    iconWrapper: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 24,
-    },
-    icon: {
-        fontSize: 48,
-    },
-    title: {
-        marginBottom: 8,
-    },
-    description: {
-        lineHeight: 22,
-        opacity: 0.7,
-    },
-    actionContainer: {
-        marginTop: 32,
-        width: '100%',
-        alignItems: 'center',
-    },
-    button: {
-        paddingHorizontal: 32,
-        borderRadius: 16,
-    }
-});

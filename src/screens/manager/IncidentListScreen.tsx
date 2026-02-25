@@ -1,52 +1,74 @@
-import { StyleSheet, Text, View,FlatList,ActivityIndicator } from 'react-native'
-import React,{useState,useEffect} from 'react'
-import {Layout} from '../../components/ui/Layout';
-import { Typography } from '../../components/ui/Typography';
+import { FlatList, RefreshControl } from 'react-native';
+import { useEffect, useState, useCallback } from 'react';
+import { Layout } from '../../components/ui/Layout';
+import { getIncidentsApi } from '../../api/incidentApi';
+import { useTheme } from '../../hooks/useTheme';
+import { Header } from '../../components/ui/Header';
+import { EmptyState } from '../../components/ui/EmptyState';
 import IncidentCard from './IncidentCard';
-import {getIncidentsApi} from '../../api/incidentApi';
-import { theme } from '../../theme/theme';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { Center, Spinner } from '@gluestack-ui/themed';
 
-const IncidentListScreen = () => {
-    const navigation=useNavigation();
-    const [incidents,setIncidents]=useState<any[]>([]);
-    const [loading,setLoading]=useState(true);
-    const fetchIncidents=async()=>{
-        try{
-            const response=await getIncidentsApi();
-            setIncidents(response.data);
-        }
-        catch(error){
-            console.log('Failed to fech incidents',error);
-        }
-        finally{
+export default function IncidentListScreen() {
+    const [incidents, setIncidents] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { colors } = useTheme();
+    const navigation = useNavigation<any>();
+
+    const fetchIncidents = async () => {
+        setLoading(true);
+        try {
+            const res = await getIncidentsApi();
+            setIncidents(res.data);
+        } catch (error) {
+            console.log('Failed to fetch incidents', error);
+        } finally {
             setLoading(false);
         }
     };
-    useEffect(()=>{
-        fetchIncidents();
-    },[]);
 
-    if(loading){
-        return(
-            <Layout>
-                <ActivityIndicator size='large'/>
-            </Layout>
-        );
-    }
+    useFocusEffect(
+        useCallback(() => {
+            fetchIncidents();
+        }, [])
+    );
 
-  return (
-    <Layout>
-      <Typography variant='h2' style={{marginBottom:theme.spacing.md}}>All Incidents</Typography>
-      <FlatList data={incidents} keyExtractor={(item)=>item.id.toString()} renderItem={({item})=>(
-        <IncidentCard title={item.title} priority={item.priority} status={item.status} reporter={item.reporter?.name||'Unknown'} onPress={()=>{
-            navigation.navigate('IncidentDetails',{incident:item})
-        }}/>
-      )}/>
-    </Layout>
-  );
+    return (
+        <Layout>
+            <Header title="Incident Feed" showBack />
+            <FlatList
+                data={incidents}
+                keyExtractor={(item) => item.id.toString()}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40, flexGrow: 1 }}
+                renderItem={({ item }) => (
+                    <IncidentCard
+                        title={item.title}
+                        status={item.status}
+                        priority={item.priority}
+                        reporter={item.reporter?.name || 'User'}
+                        onPress={() => navigation.navigate('IncidentDetails', { incident: item })}
+                    />
+                )}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={loading}
+                        onRefresh={fetchIncidents}
+                        tintColor={colors.primary}
+                    />
+                }
+                ListEmptyComponent={!loading ? (
+                    <EmptyState
+                        title="No Incidents Found"
+                        description="The system is currently stable and no incidents have been reported."
+                        icon="✅"
+                    />
+                ) : (
+                    <Center flex={1}>
+                        <Spinner size="large" color={colors.primary} />
+                    </Center>
+                )}
+            />
+        </Layout>
+    );
 }
-
-export default IncidentListScreen
-
-const styles = StyleSheet.create({})

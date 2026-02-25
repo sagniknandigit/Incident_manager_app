@@ -1,4 +1,4 @@
-import { FlatList, View, StyleSheet, RefreshControl } from 'react-native';
+import { FlatList, RefreshControl } from 'react-native';
 import { useEffect, useState, useCallback } from 'react';
 import { Layout } from '../../components/ui/Layout';
 import { Typography } from '../../components/ui/Typography';
@@ -9,11 +9,12 @@ import { Card } from '../../components/ui/Card';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { IncidentStatusBadge } from '../../components/ui/IncidentStatusBadge';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { VStack, HStack, Box, Center, Spinner } from '@gluestack-ui/themed';
 
 export default function MyIncidentsScreen() {
     const [incidents, setIncidents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const { colors, theme } = useTheme();
+    const { colors } = useTheme();
     const navigation = useNavigation<any>();
 
     const fetchIncidents = async () => {
@@ -40,36 +41,40 @@ export default function MyIncidentsScreen() {
         <Card
             variant="elevated"
             padding="lg"
-            style={styles.card as any}
+            style={{ marginBottom: 16, borderRadius: 24 }}
             onPress={() => navigation.navigate('IncidentDetails', { incident: item })}
         >
-            <View style={styles.cardHeader}>
+            <HStack sx={{ justifyContent: 'space-between', alignItems: 'center', mb: '$3' }}>
                 <IncidentStatusBadge status={item.status} />
                 <Typography variant="caption" color={colors.textDisabled}>
                     ID: #{item.id.toString().padStart(4, '0')}
                 </Typography>
-            </View>
+            </HStack>
 
-            <Typography variant="h3" style={styles.cardTitle}>{item.title}</Typography>
+            <Typography variant="h3" style={{ fontSize: 18, fontWeight: '700', marginBottom: 8 }}>
+                {item.title}
+            </Typography>
 
-            <View style={styles.infoRow}>
+            <HStack sx={{ alignItems: 'center', mb: '$4' }}>
                 <Typography variant="caption" color={colors.textSecondary}>Priority: </Typography>
                 <Typography variant="caption" style={{ color: item.priority === 'CRITICAL' ? colors.error : colors.primary, fontWeight: '700' }}>
                     {item.priority}
                 </Typography>
-            </View>
+            </HStack>
 
-            <View style={[styles.footer, { borderTopColor: colors.border }]}>
-                <View style={styles.engineerGroup}>
+            <Box sx={{ h: 1, bg: colors.border, mb: '$3', opacity: 0.5 }} />
+
+            <HStack sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                <HStack sx={{ alignItems: 'center', gap: '$1' }}>
                     <Typography variant="caption" color={colors.textDisabled}>Assigned: </Typography>
                     <Typography variant="caption" color={colors.textPrimary} style={{ fontWeight: '600' }}>
                         {item.engineer?.name || 'Searching...'}
                     </Typography>
-                </View>
+                </HStack>
                 <Typography variant="caption" color={colors.primary} style={{ fontWeight: '700' }}>
                     TRACK →
                 </Typography>
-            </View>
+            </HStack>
         </Card>
     );
 
@@ -79,7 +84,7 @@ export default function MyIncidentsScreen() {
             <FlatList
                 data={incidents}
                 keyExtractor={(item) => item.id.toString()}
-                contentContainerStyle={[styles.listContainer, { paddingBottom: theme.spacing.xl }]}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40, flexGrow: 1 }}
                 renderItem={renderItem}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
@@ -97,47 +102,12 @@ export default function MyIncidentsScreen() {
                         actionLabel="Report New Incident"
                         onAction={() => navigation.navigate('CreateIncident')}
                     />
-                ) : null}
+                ) : (
+                    <Center flex={1}>
+                        <Spinner size="large" color={colors.primary} />
+                    </Center>
+                )}
             />
         </Layout>
     );
 }
-
-const styles = StyleSheet.create({
-    listContainer: {
-        paddingHorizontal: 16,
-        paddingTop: 8,
-        flexGrow: 1,
-    },
-    card: {
-        marginBottom: 16,
-        borderRadius: 24,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        marginBottom: 8,
-    },
-    infoRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    footer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderTopWidth: 1,
-        paddingTop: 12,
-    },
-    engineerGroup: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    }
-});

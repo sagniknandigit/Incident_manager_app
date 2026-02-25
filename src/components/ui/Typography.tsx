@@ -1,11 +1,15 @@
 import React from 'react';
-import { Text, TextProps, TextStyle } from 'react-native';
+import { Heading, Text } from '@gluestack-ui/themed';
 import { useTheme } from '../../hooks/useTheme';
 
-interface TypographyProps extends TextProps {
+interface TypographyProps {
     variant?: 'h1' | 'h2' | 'h3' | 'subtitle' | 'body' | 'caption' | 'button';
     color?: string;
     align?: 'auto' | 'left' | 'right' | 'center' | 'justify';
+    style?: any;
+    children?: React.ReactNode;
+    numberOfLines?: number;
+    ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';
 }
 
 export const Typography: React.FC<TypographyProps> = ({
@@ -16,17 +20,35 @@ export const Typography: React.FC<TypographyProps> = ({
     style,
     ...props
 }) => {
-    const { theme, colors } = useTheme();
+    const { colors } = useTheme();
 
-    const textStyle = {
-        ...(theme.typography[variant] as any),
-        color: color || colors.textPrimary,
-        textAlign: align,
-    } as TextStyle;
+    const isHeading = ['h1', 'h2', 'h3'].includes(variant);
+    const Component = isHeading ? Heading : Text;
+
+    // Mapping variants to Gluestack sizes
+    const sizeMap: Record<string, any> = {
+        h1: '2xl',
+        h2: 'xl',
+        h3: 'lg',
+        subtitle: 'md',
+        body: 'sm',
+        caption: 'xs',
+    };
 
     return (
-        <Text style={[textStyle, style]} {...props}>
+        <Component
+            size={sizeMap[variant]}
+            color={color || colors.textPrimary}
+            textAlign={align}
+            sx={{
+                _dark: {
+                    color: color || colors.textPrimary,
+                },
+                ...style,
+            }}
+            {...(props as any)}
+        >
             {children}
-        </Text>
+        </Component>
     );
 };

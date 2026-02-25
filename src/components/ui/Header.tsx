@@ -1,6 +1,14 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, Image, Animated } from 'react-native';
+import { Image, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import {
+    Box,
+    HStack,
+    VStack,
+    Pressable,
+    Icon,
+    ChevronLeftIcon,
+} from '@gluestack-ui/themed';
 import { useTheme } from '../../hooks/useTheme';
 import { Typography } from './Typography';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,160 +29,109 @@ export const Header: React.FC<HeaderProps> = ({
     showThemeToggle = true
 }) => {
     const navigation = useNavigation();
-    const { colors, theme, isDark } = useTheme();
+    const { colors, isDark } = useTheme();
     const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.auth.user);
-    const scrollY = useRef(new Animated.Value(0)).current;
 
-    // Animations
     const avatarScale = useRef(new Animated.Value(0)).current;
-    const pulseAnim = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
-        // Entry animation
         Animated.spring(avatarScale, {
             toValue: 1,
             useNativeDriver: true,
             tension: 50,
             friction: 7,
         }).start();
-
-        // Subtle pulse loop
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(pulseAnim, {
-                    toValue: 1.05,
-                    duration: 2000,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(pulseAnim, {
-                    toValue: 1,
-                    duration: 2000,
-                    useNativeDriver: true,
-                })
-            ])
-        ).start();
     }, [user]);
 
     const getProfileImage = () => {
         if (!user) return null;
         switch (user.role) {
-            case 'MANAGER':
-                return require('../../assets/images/manager.png');
-            case 'ENGINEER':
-                return require('../../assets/images/engineer.png');
-            case 'REPORTER':
-                return require('../../assets/images/reporter.png');
-            default:
-                return null;
+            case 'MANAGER': return require('../../assets/images/manager.png');
+            case 'ENGINEER': return require('../../assets/images/engineer.png');
+            case 'REPORTER': return require('../../assets/images/reporter.png');
+            default: return null;
         }
     };
 
     const profileImg = getProfileImage();
 
-    const renderHeaderButton = (onPress: () => void, content: React.ReactNode, style?: any) => (
-        <TouchableOpacity
-            onPress={onPress}
-            style={[styles.headerButton, { backgroundColor: colors.surfaceHighlight }, style]}
-            activeOpacity={0.7}
-        >
-            {content}
-        </TouchableOpacity>
-    );
-
     return (
-        <View style={styles.container}>
-            <View style={styles.leftContainer}>
-                {showBack && renderHeaderButton(() => navigation.goBack(),
-                    <Typography variant="h3" color={colors.textPrimary}>{'<'}</Typography>,
-                    styles.backButton
-                )}
-            </View>
+        <Box sx={{ w: '100%', minHeight: 60, justifyContent: 'center', bg: 'transparent', py: '$2' } as any}>
+            <HStack sx={{ w: '100%', alignItems: 'center', justifyContent: 'space-between', px: '$1' } as any}>
 
-            <View style={styles.titleContainer}>
-                <Typography variant="h3" align="center" style={styles.title} color={colors.textPrimary}>
-                    {title}
-                </Typography>
-            </View>
+                {/* Left Section: Branding */}
+                <HStack alignItems="center" sx={{ gap: '$3', flexShrink: 0 } as any}>
+                    {showBack && (
+                        <Pressable
+                            onPress={() => navigation.goBack()}
+                            sx={{
+                                w: 34,
+                                h: 34,
+                                borderRadius: '$full',
+                                bg: (colors.surfaceHighlight || '#F1F5F9') as any,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                ':active': { opacity: 0.7 }
+                            } as any}
+                        >
+                            <Icon as={ChevronLeftIcon as any} color={colors.textPrimary} size="md" />
+                        </Pressable>
+                    )}
+                    <Typography
+                        variant="h3"
+                        style={{ fontWeight: '900', fontSize: 18, letterSpacing: -0.5 }}
+                        numberOfLines={1}
+                    >
+                        {title}
+                    </Typography>
+                </HStack>
 
-            <View style={styles.rightContainer}>
-                {showThemeToggle && renderHeaderButton(() => dispatch(toggleTheme()),
-                    <Typography variant="caption">{isDark ? '🌙' : '☀️'}</Typography>,
-                    styles.themeToggle
-                )}
-                {profileImg && (
-                    <Animated.View style={[
-                        styles.profileContainer,
-                        {
-                            borderColor: colors.primary + '40',
-                            transform: [
-                                { scale: Animated.multiply(avatarScale, pulseAnim) }
-                            ],
-                            opacity: avatarScale
-                        }
-                    ]}>
-                        <Image source={profileImg} style={styles.profileImage as any} />
-                    </Animated.View>
-                )}
-                {rightAction}
-            </View>
-        </View>
+                {/* Right Section: Multi-line Stacked Actions */}
+                <VStack alignItems="flex-end" sx={{ gap: '$2', ml: '$2' } as any}>
+                    {/* Top Row: Toggle + Profile Icon (Rightmost) */}
+                    <HStack alignItems="center" sx={{ gap: '$3' } as any}>
+                        {showThemeToggle && (
+                            <Pressable
+                                onPress={() => dispatch(toggleTheme())}
+                                sx={{
+                                    w: 30,
+                                    h: 30,
+                                    borderRadius: '$full',
+                                    bg: (colors.surfaceHighlight || '#F1F5F9') as any,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    ':active': { opacity: 0.7 }
+                                } as any}
+                            >
+                                <Typography style={{ fontSize: 14 }}>{isDark ? '🌙' : '☀️'}</Typography>
+                            </Pressable>
+                        )}
+
+                        {profileImg && (
+                            <Animated.View style={{
+                                width: 30,
+                                height: 30,
+                                borderRadius: 15,
+                                borderWidth: 1.5,
+                                borderColor: (colors.primary || '#4F46E5') + '30',
+                                overflow: 'hidden',
+                                transform: [{ scale: avatarScale as any }],
+                                opacity: (avatarScale as any)
+                            }}>
+                                <Image source={profileImg} style={{ width: '100%', height: '100%' }} />
+                            </Animated.View>
+                        )}
+                    </HStack>
+
+                    {/* Bottom Row: Right Action (Logout Option) */}
+                    {rightAction && (
+                        <Box sx={{ mt: '$0' } as any}>
+                            {rightAction}
+                        </Box>
+                    )}
+                </VStack>
+            </HStack>
+        </Box>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        height: 56,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: 'transparent',
-        marginBottom: 12,
-        paddingHorizontal: 4,
-    },
-    leftContainer: {
-        width: 50,
-        alignItems: 'flex-start',
-    },
-    titleContainer: {
-        flex: 1,
-        alignItems: 'center',
-    },
-    rightContainer: {
-        minWidth: 50,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-    },
-    headerButton: {
-        padding: 8,
-        borderRadius: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    backButton: {
-        // specific back button styles if needed
-    },
-    themeToggle: {
-        marginRight: 8,
-    },
-    profileContainer: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
-        borderWidth: 2,
-        overflow: 'hidden',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.05)',
-    },
-    profileImage: {
-        width: '100%',
-        height: '100%',
-        resizeMode: 'cover',
-    },
-    title: {
-        textTransform: 'capitalize',
-        fontWeight: '700',
-    }
-});

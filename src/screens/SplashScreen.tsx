@@ -1,13 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Easing, Image } from 'react-native';
+import { StyleSheet, Animated, Easing, Image } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { Typography } from '../components/ui/Typography';
-import { useSelector } from 'react-redux';
-import { RootState } from '../redux/store';
+import { Box, Center, VStack } from '@gluestack-ui/themed';
 
 export default function SplashScreen() {
-    const { colors, theme } = useTheme();
-    const isAuth = useSelector((state: RootState) => state.auth.isAuthenticated);
+    const { colors } = useTheme();
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -48,81 +46,63 @@ export default function SplashScreen() {
     }, []);
 
     return (
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <Animated.View style={[
-                styles.content,
-                {
-                    opacity: fadeAnim,
-                    transform: [
-                        { scale: Animated.multiply(scaleAnim, pulseAnim) }
-                    ]
-                }
-            ]}>
-                <View style={[styles.logoContainer, { backgroundColor: colors.surface, borderColor: colors.primary + '20' }]}>
+        <Center flex={1} bg={colors.background}>
+            <Animated.View style={{
+                alignItems: 'center',
+                opacity: fadeAnim,
+                transform: [
+                    { scale: Animated.multiply(scaleAnim, pulseAnim) }
+                ]
+            }}>
+                <Box
+                    sx={{
+                        width: 120,
+                        height: 120,
+                        borderRadius: 30,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: 24,
+                        borderWidth: 1,
+                        borderColor: colors.primary + '20',
+                        bg: colors.surface,
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 10 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 20,
+                        elevation: 5,
+                        overflow: 'hidden',
+                    }}
+                >
                     <Image
                         source={require('../assets/images/logo.png')}
-                        style={styles.logo}
+                        style={{ width: '80%', height: '80%', resizeMode: 'contain' }}
                     />
-                </View>
-                <Typography variant="h1" color={colors.primary} style={styles.title}>
-                    Incident<Typography variant="h1" color={colors.textPrimary}>Manager</Typography>
-                </Typography>
-                <Typography variant="body" color={colors.textSecondary} style={styles.subtitle}>
-                    Premium Safety Solutions
-                </Typography>
+                </Box>
+                <VStack sx={{ alignItems: 'center' }}>
+                    <Typography variant="h1" color={colors.primary} style={{ fontSize: 32, fontWeight: '800' }}>
+                        Incident<Typography variant="h1" color={colors.textPrimary} style={{ fontSize: 32, fontWeight: '800' }}>Manager</Typography>
+                    </Typography>
+                    <Typography
+                        variant="body"
+                        color={colors.textSecondary}
+                        style={{
+                            marginTop: 8,
+                            letterSpacing: 2,
+                            textTransform: 'uppercase',
+                            fontSize: 12,
+                            fontWeight: '600'
+                        }}
+                    >
+                        Premium Safety Solutions
+                    </Typography>
+                </VStack>
             </Animated.View>
 
-            <View style={styles.footer}>
+            <Box sx={{ position: 'absolute', bottom: 40 }}>
                 <Typography variant="caption" color={colors.textDisabled}>
                     v1.0.0 • Powered by Antigravity
                 </Typography>
-            </View>
-        </View>
+            </Box>
+        </Center>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    content: {
-        alignItems: 'center',
-    },
-    logoContainer: {
-        width: 120,
-        height: 120,
-        borderRadius: 30,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 24,
-        borderWidth: 1,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.1,
-        shadowRadius: 20,
-        elevation: 5,
-        overflow: 'hidden',
-    },
-    logo: {
-        width: '80%',
-        height: '80%',
-        resizeMode: 'contain',
-    },
-    title: {
-        fontSize: 32,
-        fontWeight: '800',
-    },
-    subtitle: {
-        marginTop: 8,
-        letterSpacing: 2,
-        textTransform: 'uppercase',
-        fontSize: 12,
-        fontWeight: '600',
-    },
-    footer: {
-        position: 'absolute',
-        bottom: 40,
-    }
-});

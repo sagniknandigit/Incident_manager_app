@@ -1,17 +1,16 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
-import { Typography } from './Typography';
+import { Badge, BadgeText, Box } from '@gluestack-ui/themed';
 import { useTheme } from '../../hooks/useTheme';
 
 export type IncidentStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
 
 interface IncidentStatusBadgeProps {
     status: IncidentStatus | string;
-    style?: ViewStyle;
+    style?: any;
 }
 
 export const IncidentStatusBadge: React.FC<IncidentStatusBadgeProps> = ({ status, style }) => {
-    const { colors, theme } = useTheme();
+    const { colors } = useTheme();
 
     const getStatusConfig = (s: string) => {
         switch (s) {
@@ -31,36 +30,39 @@ export const IncidentStatusBadge: React.FC<IncidentStatusBadgeProps> = ({ status
     const config = getStatusConfig(status);
 
     return (
-        <View style={[
-            styles.badge,
-            { backgroundColor: config.bg, borderColor: config.color + '20' },
-            style
-        ]}>
-            <View style={[styles.dot, { backgroundColor: config.color }]} />
-            <Typography
-                variant="caption"
-                style={{ color: config.color, fontWeight: '800', fontSize: 10, letterSpacing: 0.8 }}
+        <Badge
+            sx={{
+                backgroundColor: config.bg,
+                borderColor: config.color + '20',
+                borderRadius: '$full',
+                borderWidth: 1,
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                flexDirection: 'row',
+                alignItems: 'center',
+                ...style,
+            }}
+        >
+            <Box
+                sx={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: '$full',
+                    backgroundColor: config.color,
+                    marginRight: 6,
+                }}
+            />
+            <BadgeText
+                sx={{
+                    color: config.color,
+                    fontWeight: '$bold',
+                    fontSize: 10,
+                    textTransform: 'uppercase',
+                    letterSpacing: '$md',
+                }}
             >
                 {config.label}
-            </Typography>
-        </View>
+            </BadgeText>
+        </Badge>
     );
 };
-
-const styles = StyleSheet.create({
-    badge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 12,
-        borderWidth: 1,
-        alignSelf: 'flex-start',
-    },
-    dot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        marginRight: 6,
-    }
-});

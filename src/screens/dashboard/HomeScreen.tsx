@@ -1,4 +1,5 @@
-import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, RefreshControl } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { logout } from '../../redux/authSlice';
@@ -9,8 +10,8 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useNavigation } from '@react-navigation/native';
 import { Header } from '../../components/ui/Header';
-import { useState } from 'react';
 import { useTheme } from '../../hooks/useTheme';
+import { VStack, Box, HStack } from '@gluestack-ui/themed';
 
 export default function HomeScreen() {
   const dispatch = useDispatch();
@@ -29,70 +30,60 @@ export default function HomeScreen() {
     dispatch(logout());
   };
 
-  const renderDashboardCard = (title: string, description: string, icon: string, onPress?: () => void, variant: 'primary' | 'secondary' = 'primary') => (
+  const renderDashboardCard = (title: string, description: string, icon: string, onPress?: () => void) => (
     <Card
-      style={styles.card as any}
       onPress={onPress}
-      variant={variant === 'primary' ? 'elevated' : 'glass'}
-      padding="lg"
+      variant="elevated"
+      padding="md"
+      style={{ marginBottom: 12, borderRadius: 16 }}
     >
-      <View style={styles.cardContent}>
-        <View style={[styles.iconContainer, { backgroundColor: variant === 'primary' ? 'rgba(255,255,255,0.15)' : colors.primary + '10' }]}>
-          <Typography variant="h2">{icon}</Typography>
-        </View>
-        <View style={{ flex: 1, marginLeft: 16 }}>
-          <Typography
-            variant="h3"
-            style={{ color: variant === 'primary' ? colors.textInverse : colors.textPrimary, marginBottom: 4 }}
-          >
-            {title}
-          </Typography>
-          <Typography
-            variant="caption"
-            color={variant === 'primary' ? colors.textInverse : colors.textSecondary}
-            style={{ opacity: 0.8 }}
-          >
-            {description}
-          </Typography>
-        </View>
-        <Typography
-          variant="h3"
-          color={variant === 'primary' ? colors.textInverse : colors.primary}
-          style={{ opacity: 0.5 }}
+      <HStack sx={{ alignItems: 'center', gap: '$4' }}>
+        <Box
+          sx={{
+            w: 50,
+            h: 50,
+            borderRadius: '$md',
+            justifyContent: 'center',
+            alignItems: 'center',
+            bg: colors.primary + '10'
+          } as any}
         >
-          →
-        </Typography>
-      </View>
+          <Typography variant="h2" style={{ fontSize: 24 }}>{icon}</Typography>
+        </Box>
+        <VStack sx={{ flex: 1, gap: '$1' }}>
+          <Typography variant="h3" color={colors.textPrimary}>{title}</Typography>
+          <Typography variant="caption" color={colors.textSecondary}>{description}</Typography>
+        </VStack>
+        <Typography variant="h3" color={colors.primary} style={{ opacity: 0.5 }}>→</Typography>
+      </HStack>
     </Card>
   );
 
   const renderQuickStats = () => (
-    <View style={styles.statsContainer}>
-      <Card variant="elevated" padding="none" style={{ borderRadius: 24 } as any}>
-        <View style={[styles.statsRow, { backgroundColor: colors.surface }]}>
-          <View style={styles.statItem}>
-            <Typography variant="h2" color={colors.primary}>12</Typography>
-            <Typography variant="caption" color={colors.textSecondary}>TOTAL</Typography>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-          <View style={styles.statItem}>
-            <Typography variant="h2" color={colors.warning}>4</Typography>
-            <Typography variant="caption" color={colors.textSecondary}>PENDING</Typography>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-          <View style={styles.statItem}>
-            <Typography variant="h2" color={colors.success}>8</Typography>
-            <Typography variant="caption" color={colors.textSecondary}>RESOLVED</Typography>
-          </View>
-        </View>
-      </Card>
-    </View>
+    <Card variant="elevated" padding="none" style={{ borderRadius: 16, marginBottom: 24 }}>
+      <HStack sx={{ py: '$4', px: '$2', justifyContent: 'space-around', alignItems: 'center' } as any}>
+        <VStack sx={{ alignItems: 'center' }}>
+          <Typography variant="h2" color={colors.primary}>12</Typography>
+          <Typography variant="caption" color={colors.textSecondary}>TOTAL</Typography>
+        </VStack>
+        <Box sx={{ w: 1, h: 30, bg: colors.border } as any} />
+        <VStack sx={{ alignItems: 'center' }}>
+          <Typography variant="h2" color={colors.warning}>4</Typography>
+          <Typography variant="caption" color={colors.textSecondary}>PENDING</Typography>
+        </VStack>
+        <Box sx={{ w: 1, h: 30, bg: colors.border } as any} />
+        <VStack sx={{ alignItems: 'center' }}>
+          <Typography variant="h2" color={colors.success}>8</Typography>
+          <Typography variant="caption" color={colors.textSecondary}>RESOLVED</Typography>
+        </VStack>
+      </HStack>
+    </Card>
   );
 
   return (
     <Layout>
       <Header
-        title="Command Center"
+        title="Incident Manager"
         rightAction={
           <Button
             title="Logout"
@@ -104,143 +95,63 @@ export default function HomeScreen() {
         }
       />
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: theme.spacing.xxl }]}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.welcomeSection}>
-          <View>
-            <Typography variant="body" color={colors.textSecondary} style={{ letterSpacing: 1, fontWeight: '600' }}>
-              GOOD MORNING,
-            </Typography>
-            <Typography variant="h1" color={colors.textPrimary} style={styles.userName}>
+        <VStack sx={{ mt: '$5', mb: '$6', gap: '$1' } as any}>
+          <Typography variant="body" color={colors.textSecondary} style={{ fontWeight: '600' }}>
+            WELCOME BACK,
+          </Typography>
+          <HStack sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="h1" color={colors.textPrimary}>
               {user?.name.split(' ')[0]}
             </Typography>
-          </View>
-          <View style={[styles.roleBadge, { backgroundColor: colors.primary, borderColor: colors.primary }]}>
-            <Typography variant="caption" color={colors.textInverse} style={styles.roleText}>
-              {user?.role}
-            </Typography>
-          </View>
-        </View>
+            <Box sx={{ px: '$3', py: '$1', borderRadius: '$full', bg: colors.primary + '20' } as any}>
+              <Typography variant="caption" color={colors.primary} style={{ fontWeight: '700' }}>
+                {user?.role}
+              </Typography>
+            </Box>
+          </HStack>
+        </VStack>
 
         {renderQuickStats()}
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Typography variant="subtitle" color={colors.textPrimary} style={{ fontWeight: '700' }}>Quick Actions</Typography>
-          </View>
-
-          {user?.role === 'REPORTER' && (
-            <>
-              {renderDashboardCard('Report Incident', 'Create a new maintenance request', '📢', () => navigation.navigate('CreateIncident'), 'primary')}
-              {renderDashboardCard('My Reports', 'Track status of your submissions', '📁', () => navigation.navigate('MyIncidents'), 'secondary')}
-            </>
-          )}
-
-          {user?.role === 'ENGINEER' && (
-            <>
-              {renderDashboardCard('Assigned Tasks', 'View tickets assigned to you', '🛠️', () => navigation.navigate('AssignedIncidents'), 'primary')}
-              {renderDashboardCard('Work History', 'Check your completed activities', '📜', () => navigation.navigate('IncidentList'), 'secondary')}
-            </>
-          )}
-
-          {user?.role === 'MANAGER' && (
-            <>
-              {renderDashboardCard('Incident Feed', 'Real-time overview of system activity', '📡', () => navigation.navigate('IncidentList'), 'primary')}
-              {renderDashboardCard('Analytics', 'Performance and trend analysis', '📊', () => navigation.navigate('StatsDashboard'), 'secondary')}
-            </>
-          )}
-        </View>
-
-        <Card variant="glass" style={styles.infoBox as any}>
-          <Typography variant="caption" color={colors.textSecondary} align="center">
-            Need help? Contact the support desk at ext. 404
+        <VStack sx={{ gap: '$4' }}>
+          <Typography variant="subtitle" color={colors.textPrimary} style={{ fontWeight: '700' }}>
+            Quick Actions
           </Typography>
-        </Card>
+
+          <VStack>
+            {user?.role === 'REPORTER' && (
+              <>
+                {renderDashboardCard('Report Incident', 'Create a new maintenance request', '📢', () => navigation.navigate('CreateIncident'))}
+                {renderDashboardCard('My Reports', 'Track status of your submissions', '📁', () => navigation.navigate('MyIncidents'))}
+              </>
+            )}
+
+            {user?.role === 'ENGINEER' && (
+              <>
+                {renderDashboardCard('Assigned Tasks', 'View tickets assigned to you', '🛠️', () => navigation.navigate('AssignedIncidents'))}
+                {renderDashboardCard('Work History', 'Check your completed activities', '📜', () => navigation.navigate('IncidentList'))}
+              </>
+            )}
+
+            {user?.role === 'MANAGER' && (
+              <>
+                {renderDashboardCard('Incident Feed', 'Real-time overview of system activity', '📡', () => navigation.navigate('IncidentList'))}
+                {renderDashboardCard('Analytics', 'Performance and trend analysis', '📊', () => navigation.navigate('StatsDashboard'))}
+              </>
+            )}
+          </VStack>
+        </VStack>
+
+        <Box sx={{ mt: '$6', p: '$4', borderRadius: '$md', bg: colors.surfaceHighlight, alignItems: 'center' } as any}>
+          <Typography variant="caption" color={colors.textSecondary} align="center">
+            Need help? Contact support at ext. 404
+          </Typography>
+        </Box>
       </ScrollView>
     </Layout>
   );
 }
-
-const styles = StyleSheet.create({
-  content: {
-    paddingHorizontal: 4,
-  },
-  welcomeSection: {
-    marginBottom: 32,
-    marginTop: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-  },
-  userName: {
-    marginTop: 4,
-  },
-  roleBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  roleText: {
-    fontWeight: '800',
-    letterSpacing: 1,
-    fontSize: 10,
-  },
-  statsContainer: {
-    marginBottom: 32,
-    paddingHorizontal: 8,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 20,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-  },
-  statDivider: {
-    width: 1,
-    height: 30,
-    opacity: 0.5,
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  section: {
-    marginBottom: 32,
-    paddingHorizontal: 8,
-  },
-  sectionHeader: {
-    marginBottom: 20,
-    paddingLeft: 4,
-  },
-  card: {
-    marginBottom: 16,
-    borderRadius: 24,
-  },
-  cardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  infoBox: {
-    marginHorizontal: 8,
-    paddingVertical: 12,
-    borderRadius: 16,
-    marginTop: 8,
-  }
-});
-
