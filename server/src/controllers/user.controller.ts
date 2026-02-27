@@ -24,6 +24,32 @@ export const getUsers = async (req: Request, res: Response) => {
 
         res.json(users);
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
+        console.error('Error fetching users:', error);
+        res.status(500).json({ message: 'Server error while fetching users' });
+    }
+};
+
+export const saveFcmToken = async (req: Request, res: Response) => {
+    try {
+        const { fcmtoken } = req.body;
+        const userId = (req as any).user?.userId;
+
+        if (!userId) {
+            return res.status(401).json({ message: 'User not authenticated' });
+        }
+
+        if (!fcmtoken) {
+            return res.status(400).json({ message: 'FCM token is required' });
+        }
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { fcmtoken },
+        });
+
+        res.json({ message: 'FCM token saved successfully' });
+    } catch (error) {
+        console.error('Error saving FCM token:', error);
+        res.status(500).json({ message: 'Failed to save notification token' });
     }
 };

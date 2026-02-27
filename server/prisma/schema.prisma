@@ -28,6 +28,7 @@ model User {
   role     String
   reportedIncidents Incident[] @relation("ReportedIncidents")
   assignedIncidents Incident[] @relation("AssignedIncidents")
+  fcmtoken String?
 }
 
 model Incident {

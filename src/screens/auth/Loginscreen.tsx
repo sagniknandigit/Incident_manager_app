@@ -12,6 +12,9 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { useTheme } from '../../hooks/useTheme';
 
+import { saveFcmTokenApi } from '../../api/userApi';
+import { requestNotificationsPermission } from '../../services/notificationService';
+
 const LoginScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation<any>();
@@ -33,8 +36,20 @@ const LoginScreen = () => {
       const response = await loginApi(email, password);
       const { user, token } = response.data;
 
-      // CRITICAL FIX: Save token to storage for API headers
+      // Save token to storage for API headers
       await AsyncStorage.setItem('token', token);
+
+      // FCM Token logic
+      try {
+        const fcmToken = await requestNotificationsPermission();
+        if (fcmToken) {
+          await saveFcmTokenApi(fcmToken);
+          console.log('FCM Token registered successfully');
+        }
+      } catch (fcmError) {
+        console.warn('Failed to register FCM token:', fcmError);
+        // Don't block login if FCM fails
+      }
 
       dispatch(loginSuccess({ user, token }));
     } catch (err: any) {

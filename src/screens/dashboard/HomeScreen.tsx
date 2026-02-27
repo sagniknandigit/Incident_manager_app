@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, RefreshControl } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../redux/store';
@@ -12,13 +12,31 @@ import { useNavigation } from '@react-navigation/native';
 import { Header } from '../../components/ui/Header';
 import { useTheme } from '../../hooks/useTheme';
 import { VStack, Box, HStack } from '@gluestack-ui/themed';
+import { requestNotificationsPermission } from '../../services/notificationService';
+import { saveFcmTokenApi } from '../../api/userApi';
 
 export default function HomeScreen() {
   const dispatch = useDispatch();
   const navigation = useNavigation<any>();
   const user = useSelector((state: RootState) => state.auth.user);
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = React.useState(false);
   const { colors, theme } = useTheme();
+
+  useEffect(() => {
+    const registerNotifications = async () => {
+      try {
+        const token = await requestNotificationsPermission();
+        if (token) {
+          await saveFcmTokenApi(token);
+          console.log('Background FCM Token registration successful');
+        }
+      } catch (error) {
+        console.warn('Background FCM registration failed:', error);
+      }
+    };
+
+    registerNotifications();
+  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
